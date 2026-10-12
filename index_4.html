@@ -1,0 +1,1360 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Harga Batubara</title>
+<meta name="description" content="Tren HBA & ICI 2023–2026, perbandingan harga jual aktual, dan simulasi harga 3/6/12 bulan.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f2328'/%3E%3Cpath d='M6 22l6-7 5 4 9-10' stroke='%23e8a33d' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<style>
+:root {
+  --font-anthropic-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-anthropic-serif: "Source Serif 4", Georgia, serif;
+  --color-fg: #1f2328; --color-fg-muted: #5f6670; --color-bg: #ffffff; --color-panel: #f7f7f5;
+  --color-border-line: #e3e3df; --color-ok: #1a7f4b; --color-warn: #a35d00; --color-bad: #c0392b;
+  --cds-font-size-caption: 12px; --cds-font-size-body: 14px; --cds-font-size-heading: 16px; --cds-font-size-title: 28px;
+  --cds-font-weight-medium: 600;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 24px;
+  --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 18px;
+  --cds-radius: 10px;
+  --cds-chart-grid: #ececea; --cds-chart-axis: #c9c9c4; --cds-chart-reference: #9a9a94; --cds-chart-muted: #b9b9b3; --cds-chart-status-critical: #c0392b;
+  --cds-surface-popover: #ffffff; --cds-border: #dcdcd7; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.10); --cds-text-secondary: #5f6670;
+  --cds-dur-slow: 300ms;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-fg: #ececea; --color-fg-muted: #a3a3a0; --color-bg: #17181a; --color-panel: #202124;
+    --color-border-line: #33353a; --color-ok: #4cc38a; --color-warn: #e0a24a; --color-bad: #ff6b5e;
+    --cds-chart-grid: #2b2d31; --cds-chart-axis: #4a4c52; --cds-chart-reference: #7a7c82; --cds-chart-muted: #55575c; --cds-chart-status-critical: #ff6b5e;
+    --cds-surface-popover: #26282c; --cds-border: #3a3c42; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.4); --cds-text-secondary: #a3a3a0;
+  }
+}
+html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
+body { padding: 24px 16px 40px; font-family: var(--font-anthropic-sans); }
+.dash-skeleton { color: transparent; background: var(--color-border-line); border-radius: 6px; min-height: 1em; }
+.cx-chart.dash-skeleton { background: none; }
+.cx-foot { max-width: 1280px; margin: var(--cds-gap-lg) auto 0; font-size: 12px; color: var(--color-fg-muted); line-height: 1.5; }
+@media (max-width: 600px) { :root { --cds-font-size-title: 22px; } body { padding: 16px 12px 32px; } }
+</style>
+</head>
+<body>
+<div id="dash-root">
+<style>
+#dash-root { --dash-gutter: var(--cds-pad-lg); }
+.cx { font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 1280px; margin-inline: auto; }
+.cx-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-xs); }
+.cx-take { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: 0 0 var(--cds-gap-md); max-width: 70ch; }
+.cx-tabs { display: flex; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); margin-bottom: var(--cds-gap-md); flex-wrap: wrap; }
+.cx-tab { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; padding: var(--cds-pad-sm) var(--cds-pad-md); color: var(--color-fg-muted); cursor: pointer; }
+.cx-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.cx-page[hidden] { display: none; }
+.cx-field[hidden] { display: none; }
+.cx-bar { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: end; margin-bottom: var(--cds-gap-md); }
+.cx-field { display: flex; flex-direction: column; gap: 2px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cx select, .cx input[type="text"], .cx input[type="number"], .cx textarea {
+  font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-bg);
+  border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); }
+.cx textarea { width: 100%; box-sizing: border-box; min-height: 6rem; font-family: ui-monospace, monospace; font-size: var(--cds-font-size-caption); }
+.cx-btn { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: var(--color-panel);
+  color: var(--color-fg); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; }
+.cx-btn[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.cx-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); margin-bottom: var(--cds-gap-sm); }
+.cx-chip { display: inline-flex; align-items: center; gap: 6px; }
+.cx-chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.cx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); margin-bottom: var(--cds-gap-md); }
+.cx-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--cds-gap-md); margin-bottom: var(--cds-gap-md); }
+.cx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.cx-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 2px; }
+.cx-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-sm); }
+.cx-kpi .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cx-kpi .big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; margin: 4px 0; }
+.cx-kpi .chg { font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.cx-up { color: var(--color-ok); } .cx-down { color: var(--color-bad); } .cx-flat { color: var(--color-fg-muted); }
+.cx-chart { position: relative; min-height: 360px; }
+.cx-chart.sm { min-height: 260px; }
+.cx-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius);
+  box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); display: none; z-index: 2; min-width: 10rem; }
+.cx-tip .d { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.cx-tip .r { display: flex; gap: 6px; align-items: center; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.cx-tip .r span:first-child { display: inline-flex; gap: 6px; align-items: center; }
+.cx-tip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.cx-tbl-wrap { max-height: 26rem; overflow: auto; }
+.cx table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.cx th { text-align: left; position: sticky; top: 0; background: var(--color-panel); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-weight: var(--cds-font-weight-medium); }
+.cx td { border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); vertical-align: top; }
+.cx td.n, .cx th.n { text-align: right; }
+.cx td:first-child { white-space: nowrap; }
+.cx-row { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: end; margin-bottom: var(--cds-gap-sm); }
+.cx-slider { display: grid; grid-template-columns: minmax(9rem, 1.4fr) minmax(6rem, 2fr) 4.5rem; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); margin-bottom: 6px; }
+.cx-slider input { width: 100%; }
+.cx-slider output { text-align: right; font-variant-numeric: tabular-nums; }
+.cx-warn { font-size: var(--cds-font-size-caption); color: var(--color-warn); }
+.cx-sc { display: inline-block; width: 10px; height: 3px; vertical-align: middle; margin-right: 4px; }
+.cx b, .cx strong { font-weight: var(--cds-font-weight-medium); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.cx-fail { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.cx-fail i { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.cx-method p, .cx-method li { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.cx-method h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-sm) 0 2px; }
+</style>
+
+<div class="cx">
+  <header class="cx-head" id="top">
+    <h1>Dashboard harga batubara — HBA, ICI, HPB &amp; harga jual aktual</h1>
+    <p class="cx-take dash-skeleton" id="takeaway" data-source="kpi">—</p>
+  </header>
+
+  <nav class="cx-tabs" role="tablist" aria-label="Halaman">
+    <button class="cx-tab" role="tab" id="tab-trend" data-page="trend" aria-selected="true">Tren &amp; perbandingan</button>
+    <button class="cx-tab" role="tab" id="tab-sim" data-page="sim" aria-selected="false">Price simulation</button>
+    <button class="cx-tab" role="tab" id="tab-data" data-page="data" aria-selected="false">Data &amp; sumber</button>
+  </nav>
+
+  <!-- ============ TAB 1: TREND ============ -->
+  <section class="cx-page" id="trend">
+    <div class="cx-bar">
+      <label class="cx-field">Time from (mm/yy)<select id="from" aria-label="Time from"></select></label>
+      <label class="cx-field">Time to (mm/yy)<select id="to" aria-label="Time to"></select></label>
+      <button class="cx-btn" data-range="12">12 bln terakhir</button>
+      <button class="cx-btn" data-range="24">24 bln terakhir</button>
+      <button class="cx-btn" data-range="2024">Sejak 2024</button>
+      <button class="cx-btn" data-range="all">Semua (2023–2026)</button>
+    </div>
+
+    <div class="cx-kpis" id="kpis">
+      <div class="cx-card cx-kpi"><div class="lab">HBA 6.322 GAR · bulan terakhir</div>
+        <div class="big dash-skeleton" id="k-hba" data-source="kpi" data-field="latest" data-where="metric=hba">—</div>
+        <div class="chg" id="k-hba-c" data-source="kpi" data-field="change" data-where="metric=hba">—</div></div>
+      <div class="cx-card cx-kpi"><div class="lab">HBA I 5.300 GAR · bulan terakhir</div>
+        <div class="big dash-skeleton" id="k-hba1" data-source="kpi" data-field="latest" data-where="metric=hba1">—</div>
+        <div class="chg" id="k-hba1-c" data-source="kpi" data-field="change" data-where="metric=hba1">—</div></div>
+      <div class="cx-card cx-kpi"><div class="lab" id="k-ici-lab">ICI 2 (5.800 GAR) · data terbaru</div>
+        <div class="big dash-skeleton" id="k-ici" data-source="ici_monthly" data-field="ici2">—</div>
+        <div class="chg cx-flat" id="k-ici-c">—</div></div>
+      <div class="cx-card cx-kpi"><div class="lab">HPB 5.800 GAR · data terbaru</div>
+        <div class="big dash-skeleton" id="k-hpb" data-source="hpb_monthly" data-field="hpb5800">—</div>
+        <div class="chg cx-flat" id="k-hpb-c">—</div></div>
+      <div class="cx-card cx-kpi"><div class="lab">Harga aktual GAR ~5.800 · penjualan terakhir</div>
+        <div class="big" id="k-act">—</div>
+        <div class="chg cx-flat" id="k-act-c">Belum ada data</div></div>
+      <div class="cx-card cx-kpi"><div class="lab">Rata-rata selisih harga jual vs ICI 2</div>
+        <div class="big" id="k-spr" data-source="spread_summary" data-field="avg" data-where="metric=ici2">—</div>
+        <div class="chg cx-flat" id="k-spr-c">—</div></div>
+    </div>
+
+    <div class="cx-card" id="trend-card" style="margin-bottom: var(--cds-gap-md)">
+      <h2>Tren harga bulanan (USD/ton, FOB)</h2>
+      <p class="cx-note">HBA bulanan = rata-rata periode I &amp; II sejak Mar 2025. Garis putus-putus = ICI, titik-titik = HPB, hitam = harga aktual perusahaan (2024–2026 per bulan analisis sheet Monthly Price Analysis; 2023 per bulan B/L).</p>
+      <div class="cx-chips" id="chips"></div>
+      <div class="cx-chart dash-skeleton" id="trend-chart" data-source="hba_monthly ici_monthly hpb_monthly actual_monthly"></div>
+      <p class="cx-note" style="margin-top: var(--cds-gap-sm)">Garis vertikal Sep 2023: HBA mulai ditetapkan dengan 4 kategori kalori (6.322/5.300/4.100/3.400 GAR). Jan–Agu 2023 memakai formula sebelumnya sehingga tidak sebanding langsung.</p>
+    </div>
+
+    <div class="cx-grid">
+      <div class="cx-card" id="compare-card">
+        <h2>Aktual vs benchmark</h2>
+        <p class="cx-note">Selisih harga terhadap benchmark pada rentang waktu di atas. Bulan penjualan 2024–2026 mengikuti metode sheet Monthly Price Analysis: selling price dibandingkan ICI 2 (dari Historical Market Index) dan HPB 5.800 pada bulan analisis yang sama.</p>
+        <div class="cx-row">
+          <label class="cx-field">Harga aktual<select id="cmp-act"></select></label>
+          <label class="cx-field">Benchmark<select id="cmp-bench"></select></label>
+          <label class="cx-field">Dasar harga<select id="cmp-basis"><option value="sell">Selling price (metode perusahaan)</option><option value="act">Harga aktual</option></select></label>
+        </div>
+        <div class="cx-chart sm" id="cmp-chart" data-source="actual_monthly"></div>
+        <div class="cx-tbl-wrap" style="max-height: 16rem; margin-top: var(--cds-gap-sm)">
+          <table id="cmp-table"><thead><tr><th>Bulan</th><th class="n">Volume (t)</th><th class="n">Harga</th><th class="n">Benchmark</th><th class="n">Selisih</th><th class="n">Rasio</th><th>Acuan</th></tr></thead><tbody></tbody></table>
+        </div>
+        <p class="cx-note" id="cmp-sum" style="margin-top: var(--cds-gap-sm)"></p>
+      </div>
+
+      <div class="cx-card" id="input-card">
+        <h2>Tambah / koreksi harga aktual</h2>
+        <p class="cx-note" id="in-note-claude">Data penjualan 2023–2026 dari file Excel perusahaan sudah dimuat. Baris yang Anda tambahkan di sini hanya berlaku selama halaman terbuka; kirim CSV ke Claude untuk menyimpannya permanen.</p>
+        <p class="cx-note" id="in-note-web" hidden>Data tersimpan <b>hanya di browser perangkat ini</b> — tidak dikirim ke server dan tidak terlihat pengguna lain. Untuk memuat data penjualan perusahaan, pilih file CSV yang dibagikan internal.</p>
+        <div class="cx-row">
+          <label class="cx-field">Bulan (mm/yy)<input type="text" id="in-ym" placeholder="09/26" size="6" aria-label="Bulan mm/yy"></label>
+          <label class="cx-field">Kelas<select id="in-grade"><option value="act58">GAR ~5.800</option><option value="act64">GAR ~6.400</option></select></label>
+          <label class="cx-field">Harga (USD/t)<input type="number" id="in-price" step="0.01" min="0" style="width:7rem"></label>
+          <label class="cx-field">Volume (t)<input type="number" id="in-vol" step="1" min="0" style="width:7rem"></label>
+          <label class="cx-field">GAR<input type="number" id="in-gar" step="10" min="0" style="width:5.5rem"></label>
+          <button class="cx-btn" id="in-add">Tambah / perbarui</button>
+        </div>
+        <p class="cx-warn" id="in-msg"></p>
+        <details>
+          <summary class="cx-note" style="cursor:pointer">Impor banyak baris (CSV)</summary>
+          <p class="cx-note">Format: <code>bulan,harga[,volume,gar,kelas,selling_price,ici_acuan,hpb_acuan]</code>; bulan <code>mm/yy</code> atau <code>YYYY-MM</code>, kelas <code>5800</code> atau <code>6400</code>. Contoh: <code>01/26,48.5,55000,5800,5800</code></p>
+          <textarea id="in-paste" aria-label="Tempel CSV"></textarea>
+          <div class="cx-row" style="margin-top:6px"><button class="cx-btn" id="in-paste-btn">Impor baris</button><label class="cx-btn" style="cursor:pointer">Pilih file CSV…<input type="file" id="in-file" accept=".csv,.txt" hidden></label><button class="cx-btn" id="in-clear">Hapus baris tambahan</button></div>
+        </details>
+        <div class="cx-tbl-wrap" style="max-height: 14rem; margin-top: var(--cds-gap-sm)">
+          <table id="act-table"><thead><tr><th>Bulan</th><th>Kelas</th><th class="n">Harga</th><th class="n">Volume</th><th class="n">GAR</th><th>Asal</th></tr></thead><tbody></tbody></table>
+        </div>
+        <details style="margin-top: var(--cds-gap-sm)">
+          <summary class="cx-note" style="cursor:pointer">Ekspor CSV</summary>
+          <textarea id="out-csv" readonly aria-label="CSV ekspor"></textarea>
+          <div class="cx-row" style="margin-top:6px"><button class="cx-btn" id="out-copy">Salin</button><button class="cx-btn" id="out-dl" hidden>Unduh CSV</button></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: SIMULATION ============ -->
+  <section class="cx-page" id="sim" hidden>
+    <div class="cx-bar">
+      <label class="cx-field">Seri yang disimulasikan<select id="sim-series"></select></label>
+      <div class="cx-field">Horizon
+        <div style="display:flex; gap:4px">
+          <button class="cx-btn" data-h="3" aria-pressed="false">3 bulan</button>
+          <button class="cx-btn" data-h="6" aria-pressed="false">6 bulan</button>
+          <button class="cx-btn" data-h="12" aria-pressed="true">1 tahun</button>
+        </div>
+      </div>
+      <label class="cx-field" id="sim-bench-wrap" hidden>Benchmark acuan aktual<select id="sim-bench"></select></label>
+    </div>
+
+    <div class="cx-kpis">
+      <div class="cx-card cx-kpi"><div class="lab" id="s-bear-lab">Bearish</div><div class="big" id="s-bear">—</div><div class="chg" id="s-bear-c"></div></div>
+      <div class="cx-card cx-kpi"><div class="lab" id="s-base-lab">Base</div><div class="big" id="s-base">—</div><div class="chg" id="s-base-c"></div></div>
+      <div class="cx-card cx-kpi"><div class="lab" id="s-bull-lab">Bullish</div><div class="big" id="s-bull">—</div><div class="chg" id="s-bull-c"></div></div>
+      <div class="cx-card cx-kpi"><div class="lab" id="s-cus-lab">Kustom (pengaturan Anda)</div><div class="big" id="s-cus">—</div><div class="chg" id="s-cus-c"></div></div>
+    </div>
+
+    <div class="cx-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));">
+      <div class="cx-card" id="fan-card">
+        <h2>Jalur harga proyeksi</h2>
+        <p class="cx-note" id="fan-note">Riwayat 24 bulan terakhir, tiga skenario, dan pita ketidakpastian 80% di sekitar skenario dasar.</p>
+        <div class="cx-chart dash-skeleton" id="fan-chart" data-source="sim_preset"></div>
+      </div>
+      <div class="cx-card" id="factor-card">
+        <h2>Faktor penentu (skenario kustom)</h2>
+        <p class="cx-note">Geser untuk mengatur kejutan setiap faktor relatif terhadap ekspektasi pasar saat ini. Tombol preset mengisi nilai skenario.</p>
+        <div class="cx-row"><button class="cx-btn" data-preset="bearish">Isi Bearish</button><button class="cx-btn" data-preset="base">Isi Base</button><button class="cx-btn" data-preset="bullish">Isi Bullish</button></div>
+        <div id="sliders" data-source="sim_factors"></div>
+        <p class="cx-note" id="impact-note" style="margin-top: var(--cds-gap-sm)"></p>
+      </div>
+    </div>
+
+    <div class="cx-grid">
+      <div class="cx-card" id="summary-card">
+        <h2>Ringkasan proyeksi bulan ke-3, ke-6, ke-12</h2>
+        <p class="cx-note" id="sum-note">USD/ton. Rentang = pita 80% skenario pada bulan ke-12.</p>
+        <table id="sum-table" data-source="sim_summary" data-row-key="key">
+          <thead><tr><th data-field="scenario">Skenario</th><th class="n" data-field="m3">Bln ke-3</th><th class="n" data-field="m6">Bln ke-6</th><th class="n" data-field="m12">Bln ke-12</th><th class="n" data-field="lo12">Bawah 80%</th><th class="n" data-field="hi12">Atas 80%</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="cx-note" id="act-sim-note" style="margin-top: var(--cds-gap-sm)"></p>
+      </div>
+      <div class="cx-card" id="bt-card">
+        <h2>Validasi model (backtest expanding window)</h2>
+        <p class="cx-note" id="bt-note">Error out-of-sample; bobot ensemble = 1/RMSE² per horizon.</p>
+        <table id="bt-table" data-source="backtest" data-row-key="key">
+          <thead><tr><th data-field="model">Model</th><th class="n" data-field="h">Horizon</th><th class="n" data-field="n">n uji</th><th class="n" data-field="mae">MAE</th><th class="n" data-field="rmse">RMSE</th><th class="n" data-field="dir">Arah benar</th><th class="n" data-field="weight">Bobot</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="cx-card" id="factors-table-card" style="margin-bottom: var(--cds-gap-md)">
+      <h2>Variabel pasar &amp; asumsi skenario</h2>
+      <p class="cx-note">Elastisitas = % perubahan harga per 1% kejutan faktor (asumsi analis, bukan hasil estimasi statistik — data faktor bulanan yang konsisten tidak tersedia publik). Jeda = bulan hingga efek penuh.</p>
+      <div class="cx-tbl-wrap">
+        <table id="fac-table" data-source="sim_factors" data-row-key="factor">
+          <thead><tr><th data-field="label">Faktor</th><th data-field="group">Kelompok</th><th data-field="link">Pengaruh</th><th class="n" data-field="elasticity">Elastisitas</th><th class="n" data-field="lag_m">Jeda (bln)</th><th class="n" data-field="bearish">Bearish</th><th class="n" data-field="base">Base</th><th class="n" data-field="bullish">Bullish</th><th data-field="basis">Dasar</th><th data-field="source">Sumber</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="cx-card cx-method" id="method">
+      <h2>Metodologi &amp; keterbatasan</h2>
+      <h3>1. Data &amp; benchmark</h3>
+      <p>Simulasi dijalankan pada seri yang punya minimal 24 titik bulanan: HBA, HBA I–III, HPB 5.800 dan ICI 1–2 (bila datanya lengkap). Newcastle 6.000 NAR (benchmark pada brief) tidak tersedia sebagai seri historis publik yang bebas, sehingga dipakai sebagai jangkar pasar melalui kurva futures ICE (Okt 2026–Okt 2027). HBA = harga acuan pemerintah berbasis realisasi penjualan (bobot 70% bulan sebelumnya, 30% dua bulan sebelumnya), ditetapkan per dua minggu sejak Mar 2025; ICI = penilaian pasar mingguan Argus/Coalindo FOB Kalimantan; HPB = harga patokan turunan HBA untuk spesifikasi tertentu.</p>
+      <h3>2. Model statistik</h3>
+      <p>Tiga model dibandingkan: naive (harga terakhir), AR(1) pada log harga (mean-reverting), dan rata-rata 12 bulan. Backtest expanding window tanpa data masa depan; bobot ensemble = 1/RMSE². ARIMAX dan XGBoost tidak dipakai: dengan ±30–38 titik bulanan, model tersebut cenderung overfit dan variabel eksternal bulanan yang konsisten tidak tersedia publik.</p>
+      <h3>3. Lapisan fundamental &amp; skenario</h3>
+      <p>Harga skenario = ensemble statistik × (1 + 0,5 × perubahan kurva forward Newcastle) × (1 + Σ elastisitas × kejutan faktor × min(1, bulan/jeda)). Base = tanpa kejutan; Bearish/Bullish memakai nilai pada tabel faktor.</p>
+      <h3>4. Ketidakpastian</h3>
+      <p>Pita 80% = ±1,28 × volatilitas bulanan log-return × √bulan. Risiko perubahan struktural: revisi RKAB, operasional penuh eksportir DSI, kebijakan bea keluar, dan krisis gas Timur Tengah dapat menggeser harga di luar pita.</p>
+      <h3>5. Harga aktual perusahaan</h3>
+      <p>Penjualan perusahaan tidak terjadi setiap bulan, sehingga tidak dimodelkan langsung. Proyeksi harga aktual = jalur benchmark terpilih × rasio rata-rata aktual/benchmark pada maksimal 6 bulan penjualan terakhir yang tumpang-tindih.</p>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: DATA ============ -->
+  <section class="cx-page" id="data" hidden>
+    <div class="cx-card" id="notes-card" style="margin-bottom: var(--cds-gap-md)">
+      <h2>Catatan kualitas data</h2>
+      <p class="cx-note">Perbedaan atau koreksi yang ditemukan saat menggabungkan file perusahaan dengan data publik.</p>
+      <div class="cx-tbl-wrap">
+        <table id="notes-table" data-source="data_notes" data-row-key="key">
+          <thead><tr><th data-field="topic">Topik</th><th data-field="detail">Rincian</th><th data-field="status">Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cx-card" id="ship-card" style="margin-bottom: var(--cds-gap-md)">
+      <h2>Riwayat penjualan per pengapalan (2023–2026)</h2>
+      <p class="cx-note" id="ship-note">Sumber: file Excel perusahaan (sheet Data Penjualan). "Bulan analisis" = bulan pengelompokan di sheet Monthly Price Analysis. Data internal — nama buyer tidak ditampilkan.</p>
+      <div class="cx-tbl-wrap">
+        <table id="ship-table" data-source="shipments" data-row-key="key">
+          <thead><tr><th data-field="bl_date">Tgl B/L</th><th data-field="pricing_month">Bulan analisis</th><th data-field="vessel">Kapal</th><th data-field="entity">Entitas</th><th data-field="destination">Tujuan</th><th class="n" data-field="gar">GAR</th><th class="n" data-field="selling_price">Harga kontrak</th><th class="n" data-field="actual_price">Harga aktual</th><th class="n" data-field="volume_t">Volume (t)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cx-card" id="periods-card" style="margin-bottom: var(--cds-gap-md)">
+      <h2>HBA per periode penetapan</h2>
+      <p class="cx-note">USD/ton. Kosong = nilai tidak ditemukan pada sumber publik yang dapat diverifikasi (HBA I–III Jan–Jul 2023 memakai spesifikasi lama).</p>
+      <div class="cx-tbl-wrap">
+        <table id="per-table" data-source="hba_periods" data-row-key="label">
+          <thead><tr><th data-field="label">Periode</th><th class="n" data-field="hba">HBA 6.322</th><th class="n" data-field="hba1">HBA I 5.300</th><th class="n" data-field="hba2">HBA II 4.100</th><th class="n" data-field="hba3">HBA III 3.400</th><th data-field="src">Sumber</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cx-grid">
+      <div class="cx-card" id="ici-card">
+        <h2>ICI (Argus/Coalindo)</h2>
+        <p class="cx-note" id="ici-note">ICI 1–2 Apr 2024–Sep 2026 dari file perusahaan; bulan lain dan ICI 3–5 dari sumber publik (rata-rata bulanan atau harga mingguan, lihat kolom Jenis).</p>
+        <div class="cx-tbl-wrap">
+          <table id="ici-table" data-source="ici_monthly" data-row-key="ym">
+            <thead><tr><th data-field="ym">Bulan</th><th class="n" data-field="ici1">ICI 1</th><th class="n" data-field="ici2">ICI 2</th><th class="n" data-field="ici3">ICI 3</th><th class="n" data-field="ici4">ICI 4</th><th class="n" data-field="ici5">ICI 5</th><th data-field="kind">Jenis</th><th data-field="src">Sumber</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cx-card" id="hpb-card">
+        <h2>HPB (file perusahaan)</h2>
+        <p class="cx-note">Harga Patokan Batubara bulanan untuk spesifikasi 5.800 dan 6.500 GAR.</p>
+        <div class="cx-tbl-wrap">
+          <table id="hpb-table" data-source="hpb_monthly" data-row-key="ym">
+            <thead><tr><th data-field="ym">Bulan</th><th class="n" data-field="hpb5800">HPB 5.800</th><th class="n" data-field="hpb6500">HPB 6.500</th><th data-field="src">Sumber</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="cx-card" id="ctx-card">
+      <h2>Konteks pasar</h2>
+      <p class="cx-note">Indikator pendukung yang dipakai untuk menyusun skenario.</p>
+      <div class="cx-tbl-wrap">
+        <table id="ctx-table" data-source="market_context" data-row-key="item">
+          <thead><tr><th data-field="item">Indikator</th><th class="n" data-field="value">Nilai</th><th data-field="unit">Satuan</th><th data-field="date">Tanggal</th><th data-field="source">Sumber</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>window.__DATA__ = {"hba_monthly":[{"ym":"2023-01","hba":305.21,"hba1":null,"hba2":null,"hba3":null,"src":"Stockwatch/ESDM","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-02","hba":277.05,"hba1":null,"hba2":null,"hba3":null,"src":"Dataindonesia","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-03","hba":283.08,"hba1":null,"hba2":null,"hba3":null,"src":"ESDM (Kepmen 41.K/2023, formula baru)","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-04","hba":265.26,"hba1":null,"hba2":null,"hba3":null,"src":"Liputan6/ESDM Kepmen 71.K/2023","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-05","hba":206.16,"hba1":null,"hba2":null,"hba3":null,"src":"ESDM/Kompas Kepmen 84.K/2023","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-06","hba":191.36,"hba1":null,"hba2":null,"hba3":null,"src":"Katadata Kepmen 119.K/2023","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-07","hba":191.6,"hba1":null,"hba2":null,"hba3":null,"src":"Katadata Kepmen 183.K/2023","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-08","hba":179.9,"hba1":84.75,"hba2":57.38,"hba3":null,"src":"Bisnis Kepmen 245.K/2023","periods":1,"regime":"Formula lama (s.d. Agu 2023)"},{"ym":"2023-09","hba":133.13,"hba1":89.11,"hba2":53.83,"hba3":31.82,"src":"Dataindonesia; Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2023-10","hba":123.96,"hba1":81.38,"hba2":50.41,"hba3":25.5,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2023-11","hba":139.8,"hba1":103.2,"hba2":52.86,"hba3":28.49,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2023-12","hba":117.38,"hba1":85.92,"hba2":57.7,"hba3":34.18,"src":"Investasiku/ESDM","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-01","hba":125.85,"hba1":87.36,"hba2":58.56,"hba3":37.09,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-02","hba":124.95,"hba1":87.65,"hba2":57.86,"hba3":37.54,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-03","hba":109.77,"hba1":88.77,"hba2":56.83,"hba3":37.6,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-04","hba":121.13,"hba1":86.93,"hba2":57.17,"hba3":36.32,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-05","hba":114.06,"hba1":91.77,"hba2":56.52,"hba3":36.39,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-06","hba":123.0,"hba1":88.65,"hba2":54.79,"hba3":35.82,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-07","hba":130.44,"hba1":91.85,"hba2":56.09,"hba3":36.22,"src":"Kontan/ESDM; Bisnis Kepmen 195.K/2024","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-08","hba":115.29,"hba1":86.2,"hba2":54.63,"hba3":35.62,"src":"Bisnis Kepmen 195.K/2024","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-09","hba":125.15,"hba1":85.01,"hba2":53.26,"hba3":35.89,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-10","hba":131.17,"hba1":79.69,"hba2":52.41,"hba3":34.67,"src":"Katadata Kepmen 277.K/2024","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-11","hba":114.43,"hba1":83.46,"hba2":51.91,"hba3":35.57,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2024-12","hba":122.51,"hba1":81.59,"hba2":51.78,"hba3":35.28,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2025-01","hba":124.01,"hba1":83.95,"hba2":52.75,"hba3":34.7,"src":"Bisnis","periods":1,"regime":"Formula 4 kategori"},{"ym":"2025-02","hba":124.24,"hba1":82.26,"hba2":50.52,"hba3":34.38,"src":"Katadata Databoks","periods":1,"regime":"Formula 4 kategori"},{"ym":"2025-03","hba":123.0,"hba1":81.68,"hba2":50.07,"hba3":33.94,"src":"Bisnis; Katadata Kepmen 80.K/2025","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-04","hba":121.76,"hba1":78.43,"hba2":49.8,"hba3":33.52,"src":"ESDM; ESDM; Bisnis","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-05","hba":115.77,"hba1":78.71,"hba2":50.5,"hba3":35.08,"src":"Bisnis Kepmen 175.K/2025; ESDM","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-06","hba":99.79,"hba1":76.62,"hba2":50.16,"hba3":35.8,"src":"ESDM Kepmen 197.K/2025; ESDM; CNBC Indonesia","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-07","hba":102.5,"hba1":73.72,"hba2":49.06,"hba3":35.94,"src":"Bisnis; ESDM","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-08","hba":101.45,"hba1":67.27,"hba2":44.72,"hba3":34.17,"src":"Antara; Bisnis","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-09","hba":104.41,"hba1":65.45,"hba2":42.44,"hba3":32.55,"src":"Antara; Katadata Databoks","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-10","hba":108.34,"hba1":66.3,"hba2":43.41,"hba3":33.44,"src":"Katadata Databoks","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-11","hba":102.89,"hba1":67.22,"hba2":44.16,"hba3":33.81,"src":"Bisnis; IMA","periods":2,"regime":"Formula 4 kategori"},{"ym":"2025-12","hba":99.53,"hba1":68.96,"hba2":44.91,"hba3":34.59,"src":"Bisnis; Petromindo","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-01","hba":103.66,"hba1":71.92,"hba2":47.72,"hba3":35.26,"src":"Listrik Indonesia; Petromindo Kepmen 458.K/2025","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-02","hba":104.49,"hba1":72.72,"hba2":47.98,"hba3":34.84,"src":"Bisnis; Bisnis Kepmen 47.K/2026","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-03","hba":102.69,"hba1":71.42,"hba2":47.98,"hba3":34.25,"src":"Bisnis","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-04","hba":101.65,"hba1":75.0,"hba2":51.42,"hba3":36.77,"src":"Bisnis; Bisnis Kepmen 145.K/2026","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-05","hba":111.44,"hba1":79.95,"hba2":56.63,"hba3":39.05,"src":"IMA","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-06","hba":122.87,"hba1":86.47,"hba2":59.5,"hba3":40.75,"src":"Bisnis Kepmen 227.K/2026; IMA","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-07","hba":129.22,"hba1":90.42,"hba2":62.92,"hba3":43.49,"src":"IMA; IMA Kepmen 274/2026","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-08","hba":124.25,"hba1":95.09,"hba2":65.65,"hba3":45.31,"src":"ESDM; IMA","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-09","hba":125.21,"hba1":94.5,"hba2":64.12,"hba3":44.34,"src":"IMA; IMA/Kontan","periods":2,"regime":"Formula 4 kategori"},{"ym":"2026-10","hba":122.52,"hba1":90.6,"hba2":63.45,"hba3":43.84,"src":"ESDM Kepmen 384.K/2026","periods":1,"regime":"Formula 4 kategori"}],"hba_periods":[{"label":"Jan 2023","ym":"2023-01","hba":305.21,"hba1":null,"hba2":null,"hba3":null,"src":"Stockwatch/ESDM"},{"label":"Feb 2023","ym":"2023-02","hba":277.05,"hba1":null,"hba2":null,"hba3":null,"src":"Dataindonesia"},{"label":"Mar 2023","ym":"2023-03","hba":283.08,"hba1":null,"hba2":null,"hba3":null,"src":"ESDM (Kepmen 41.K/2023, formula baru)"},{"label":"Apr 2023","ym":"2023-04","hba":265.26,"hba1":null,"hba2":null,"hba3":null,"src":"Liputan6/ESDM Kepmen 71.K/2023"},{"label":"Mei 2023","ym":"2023-05","hba":206.16,"hba1":null,"hba2":null,"hba3":null,"src":"ESDM/Kompas Kepmen 84.K/2023"},{"label":"Jun 2023","ym":"2023-06","hba":191.36,"hba1":null,"hba2":null,"hba3":null,"src":"Katadata Kepmen 119.K/2023"},{"label":"Jul 2023","ym":"2023-07","hba":191.6,"hba1":null,"hba2":null,"hba3":null,"src":"Katadata Kepmen 183.K/2023"},{"label":"Agu 2023","ym":"2023-08","hba":179.9,"hba1":84.75,"hba2":57.38,"hba3":null,"src":"Bisnis Kepmen 245.K/2023"},{"label":"Sep 2023","ym":"2023-09","hba":133.13,"hba1":89.11,"hba2":53.83,"hba3":31.82,"src":"Dataindonesia; Katadata Databoks"},{"label":"Okt 2023","ym":"2023-10","hba":123.96,"hba1":81.38,"hba2":50.41,"hba3":25.5,"src":"Katadata Databoks"},{"label":"Nov 2023","ym":"2023-11","hba":139.8,"hba1":103.2,"hba2":52.86,"hba3":28.49,"src":"Katadata Databoks"},{"label":"Des 2023","ym":"2023-12","hba":117.38,"hba1":85.92,"hba2":57.7,"hba3":34.18,"src":"Investasiku/ESDM"},{"label":"Jan 2024","ym":"2024-01","hba":125.85,"hba1":87.36,"hba2":58.56,"hba3":37.09,"src":"Katadata Databoks"},{"label":"Feb 2024","ym":"2024-02","hba":124.95,"hba1":87.65,"hba2":57.86,"hba3":37.54,"src":"Katadata Databoks"},{"label":"Mar 2024","ym":"2024-03","hba":109.77,"hba1":88.77,"hba2":56.83,"hba3":37.6,"src":"Katadata Databoks"},{"label":"Apr 2024","ym":"2024-04","hba":121.13,"hba1":86.93,"hba2":57.17,"hba3":36.32,"src":"Katadata Databoks"},{"label":"Mei 2024","ym":"2024-05","hba":114.06,"hba1":91.77,"hba2":56.52,"hba3":36.39,"src":"Katadata Databoks"},{"label":"Jun 2024","ym":"2024-06","hba":123.0,"hba1":88.65,"hba2":54.79,"hba3":35.82,"src":"Katadata Databoks"},{"label":"Jul 2024","ym":"2024-07","hba":130.44,"hba1":91.85,"hba2":56.09,"hba3":36.22,"src":"Kontan/ESDM; Bisnis Kepmen 195.K/2024"},{"label":"Agu 2024","ym":"2024-08","hba":115.29,"hba1":86.2,"hba2":54.63,"hba3":35.62,"src":"Bisnis Kepmen 195.K/2024"},{"label":"Sep 2024","ym":"2024-09","hba":125.15,"hba1":85.01,"hba2":53.26,"hba3":35.89,"src":"Katadata Databoks"},{"label":"Okt 2024","ym":"2024-10","hba":131.17,"hba1":79.69,"hba2":52.41,"hba3":34.67,"src":"Katadata Kepmen 277.K/2024"},{"label":"Nov 2024","ym":"2024-11","hba":114.43,"hba1":83.46,"hba2":51.91,"hba3":35.57,"src":"Katadata Databoks"},{"label":"Des 2024","ym":"2024-12","hba":122.51,"hba1":81.59,"hba2":51.78,"hba3":35.28,"src":"Katadata Databoks"},{"label":"Jan 2025","ym":"2025-01","hba":124.01,"hba1":83.95,"hba2":52.75,"hba3":34.7,"src":"Bisnis"},{"label":"Feb 2025","ym":"2025-02","hba":124.24,"hba1":82.26,"hba2":50.52,"hba3":34.38,"src":"Katadata Databoks"},{"label":"Mar 2025 P1","ym":"2025-03","hba":128.24,"hba1":82.66,"hba2":50.7,"hba3":34.16,"src":"Katadata Kepmen 80.K/2025"},{"label":"Mar 2025 P2","ym":"2025-03","hba":117.76,"hba1":80.7,"hba2":49.44,"hba3":33.71,"src":"Bisnis"},{"label":"Apr 2025 P1","ym":"2025-04","hba":123.32,"hba1":78.4,"hba2":49.54,"hba3":32.71,"src":"ESDM; Bisnis"},{"label":"Apr 2025 P2","ym":"2025-04","hba":120.2,"hba1":78.46,"hba2":50.07,"hba3":34.32,"src":"ESDM"},{"label":"Mei 2025 P1","ym":"2025-05","hba":121.15,"hba1":80.8,"hba2":50.43,"hba3":34.73,"src":"ESDM"},{"label":"Mei 2025 P2","ym":"2025-05","hba":110.38,"hba1":76.62,"hba2":50.58,"hba3":35.42,"src":"Bisnis Kepmen 175.K/2025"},{"label":"Jun 2025 P1","ym":"2025-06","hba":100.97,"hba1":77.59,"hba2":50.08,"hba3":35.47,"src":"ESDM Kepmen 197.K/2025"},{"label":"Jun 2025 P2","ym":"2025-06","hba":98.61,"hba1":75.64,"hba2":50.25,"hba3":36.14,"src":"ESDM; CNBC Indonesia"},{"label":"Jul 2025 P1","ym":"2025-07","hba":107.35,"hba1":71.5,"hba2":49.78,"hba3":35.87,"src":"ESDM"},{"label":"Jul 2025 P2","ym":"2025-07","hba":97.65,"hba1":75.94,"hba2":48.35,"hba3":36.0,"src":"Bisnis"},{"label":"Agu 2025 P1","ym":"2025-08","hba":102.22,"hba1":67.33,"hba2":45.74,"hba3":34.86,"src":"Bisnis"},{"label":"Agu 2025 P2","ym":"2025-08","hba":100.69,"hba1":67.2,"hba2":43.7,"hba3":33.48,"src":"Antara"},{"label":"Sep 2025 P1","ym":"2025-09","hba":105.33,"hba1":66.5,"hba2":42.3,"hba3":32.32,"src":"Antara"},{"label":"Sep 2025 P2","ym":"2025-09","hba":103.49,"hba1":64.4,"hba2":42.58,"hba3":32.78,"src":"Katadata Databoks"},{"label":"Okt 2025 P1","ym":"2025-10","hba":106.94,"hba1":64.84,"hba2":43.12,"hba3":32.95,"src":"Katadata Databoks"},{"label":"Okt 2025 P2","ym":"2025-10","hba":109.74,"hba1":67.76,"hba2":43.71,"hba3":33.92,"src":"Katadata Databoks"},{"label":"Nov 2025 P1","ym":"2025-11","hba":103.75,"hba1":67.22,"hba2":44.02,"hba3":33.74,"src":"IMA"},{"label":"Nov 2025 P2","ym":"2025-11","hba":102.03,"hba1":67.22,"hba2":44.29,"hba3":33.88,"src":"Bisnis"},{"label":"Des 2025 P1","ym":"2025-12","hba":98.26,"hba1":67.99,"hba2":44.37,"hba3":34.15,"src":"Bisnis"},{"label":"Des 2025 P2","ym":"2025-12","hba":100.81,"hba1":69.93,"hba2":45.44,"hba3":35.02,"src":"Petromindo"},{"label":"Jan 2026 P1","ym":"2026-01","hba":103.3,"hba1":72.23,"hba2":47.05,"hba3":35.13,"src":"Petromindo Kepmen 458.K/2025"},{"label":"Jan 2026 P2","ym":"2026-01","hba":104.03,"hba1":71.61,"hba2":48.39,"hba3":35.38,"src":"Listrik Indonesia"},{"label":"Feb 2026 P1","ym":"2026-02","hba":106.11,"hba1":73.69,"hba2":48.21,"hba3":35.83,"src":"Bisnis Kepmen 47.K/2026"},{"label":"Feb 2026 P2","ym":"2026-02","hba":102.87,"hba1":71.74,"hba2":47.74,"hba3":33.85,"src":"Bisnis"},{"label":"Mar 2026 P1","ym":"2026-03","hba":102.37,"hba1":71.29,"hba2":47.64,"hba3":34.25,"src":"Bisnis"},{"label":"Mar 2026 P2","ym":"2026-03","hba":103.01,"hba1":71.55,"hba2":48.32,"hba3":34.25,"src":"Bisnis"},{"label":"Apr 2026 P1","ym":"2026-04","hba":99.87,"hba1":72.28,"hba2":49.99,"hba3":35.23,"src":"Bisnis"},{"label":"Apr 2026 P2","ym":"2026-04","hba":103.43,"hba1":77.71,"hba2":52.84,"hba3":38.3,"src":"Bisnis Kepmen 145.K/2026"},{"label":"Mei 2026 P1","ym":"2026-05","hba":106.57,"hba1":79.56,"hba2":55.66,"hba3":38.76,"src":"IMA"},{"label":"Mei 2026 P2","ym":"2026-05","hba":116.32,"hba1":80.34,"hba2":57.61,"hba3":39.35,"src":"IMA"},{"label":"Jun 2026 P1","ym":"2026-06","hba":121.83,"hba1":84.53,"hba2":58.81,"hba3":40.32,"src":"Bisnis Kepmen 227.K/2026"},{"label":"Jun 2026 P2","ym":"2026-06","hba":123.91,"hba1":88.4,"hba2":60.19,"hba3":41.19,"src":"IMA"},{"label":"Jul 2026 P1","ym":"2026-07","hba":126.58,"hba1":90.94,"hba2":62.59,"hba3":41.91,"src":"IMA Kepmen 274/2026"},{"label":"Jul 2026 P2","ym":"2026-07","hba":131.85,"hba1":89.9,"hba2":63.25,"hba3":45.08,"src":"IMA"},{"label":"Agu 2026 P1","ym":"2026-08","hba":124.44,"hba1":93.27,"hba2":65.48,"hba3":45.27,"src":"ESDM"},{"label":"Agu 2026 P2","ym":"2026-08","hba":124.06,"hba1":96.92,"hba2":65.81,"hba3":45.34,"src":"IMA"},{"label":"Sep 2026 P1","ym":"2026-09","hba":126.87,"hba1":95.05,"hba2":65.06,"hba3":44.15,"src":"IMA/Kontan"},{"label":"Sep 2026 P2","ym":"2026-09","hba":123.54,"hba1":93.94,"hba2":63.17,"hba3":44.53,"src":"IMA"},{"label":"Okt 2026 P1","ym":"2026-10","hba":122.52,"hba1":90.6,"hba2":63.45,"hba3":43.84,"src":"ESDM Kepmen 384.K/2026"}],"market_context":[{"item":"HBA terakhir (6.322 GAR)","value":122.52,"unit":"USD/t","date":"1 Okt 2026","source":"ESDM Kepmen 384.K/MB.01/MEM.B/2026"},{"item":"Newcastle futures Okt 2026","value":148.85,"unit":"USD/t","date":"Okt 2026","source":"ICE Newcastle futures (TradingView)"},{"item":"Newcastle futures Jan 2027","value":152.25,"unit":"USD/t","date":"Okt 2026","source":"ICE Newcastle futures (TradingView)"},{"item":"Konsensus Newcastle 2027 (median)","value":118.0,"unit":"USD/t","date":"Mar–Apr 2026","source":"KPMG Coal Price & FX Consensus"},{"item":"Konsensus Newcastle jangka panjang (riil)","value":97.6,"unit":"USD/t","date":"Mar–Apr 2026","source":"KPMG Coal Price & FX Consensus"},{"item":"Perdagangan termal laut global 2026","value":1062.0,"unit":"Mt","date":"2026","source":"IEA Coal Mid-Year Update 2026"},{"item":"Ekspor termal Indonesia 2026 (proyeksi)","value":495.0,"unit":"Mt","date":"2026","source":"IEA Coal Mid-Year Update 2026"},{"item":"Produksi rencana RKAB 2026","value":720.0,"unit":"Mt","date":"Sep 2026","source":"BCA Sekuritas Vista 30 Sep 2026"},{"item":"Produksi Indonesia s.d. Jul 2026","value":432.0,"unit":"Mt","date":"Jul 2026","source":"BCA Sekuritas Vista 30 Sep 2026"},{"item":"Impor termal laut China 2026 (proyeksi)","value":310.0,"unit":"Mt","date":"2026","source":"IEA Coal Mid-Year Update 2026"},{"item":"Impor termal laut India 2026 (proyeksi)","value":160.0,"unit":"Mt","date":"2026","source":"IEA Coal Mid-Year Update 2026"},{"item":"ICI 4 (4.200 GAR) mingguan","value":65.92,"unit":"USD/t","date":"26 Jun 2026","source":"indonesiacokingcoal.com"}],"model_params":[{"param":"model_start","value":"2023-09","note":"Data model mulai Sep 2023 (setelah perubahan formula HBA ke 4 kategori)"},{"param":"model_start_ici","value":"2023-11","note":"Data model ICI mulai Nov 2023 (rata-rata bulanan pertama yang tersedia)"},{"param":"model_start_hpb","value":"2024-04","note":"Data model HPB mulai Apr 2024 (awal data file perusahaan)"},{"param":"fc_pass_through","value":0.5,"note":"Porsi perubahan kurva forward Newcastle yang diteruskan ke HBA (asumsi)"},{"param":"band_z","value":1.2816,"note":"Pita ketidakpastian 80% (z = 1,2816)"},{"param":"cutoff","value":"2026-10","note":"Data HBA terakhir: Periode I Oktober 2026 (Kepmen 384.K/MB.01/MEM.B/2026)"},{"param":"min_points","value":24,"note":"Seri disimulasikan hanya bila punya ≥24 titik bulanan"}],"nc_forward":[{"ym":"2026-10","ncf":148.85},{"ym":"2026-11","ncf":149.5},{"ym":"2026-12","ncf":150.9},{"ym":"2027-01","ncf":152.25},{"ym":"2027-02","ncf":152.25},{"ym":"2027-03","ncf":152.0},{"ym":"2027-04","ncf":151.4},{"ym":"2027-05","ncf":150.65},{"ym":"2027-06","ncf":150.3},{"ym":"2027-07","ncf":150.2},{"ym":"2027-08","ncf":149.95},{"ym":"2027-09","ncf":149.7},{"ym":"2027-10","ncf":149.35}],"sim_factors":[{"factor":"china","label":"Impor batubara China","group":"Permintaan","link":"Langsung","elasticity":0.5,"lag_m":2,"bearish":-10,"base":0,"bullish":8,"unit":"% vs ekspektasi","basis":"IEA: impor termal laut China ~325 Mt (2025) → ~310 Mt (2026); stok tinggi & pergeseran ke Mongolia","source":"IEA Coal Mid-Year Update 2026"},{"factor":"india","label":"Impor batubara India","group":"Permintaan","link":"Langsung","elasticity":0.3,"lag_m":2,"bearish":-8,"base":0,"bullish":6,"unit":"% vs ekspektasi","basis":"IEA: impor termal laut India ~167 Mt (2025) → ~160 Mt (2026); stok tinggi & substitusi domestik","source":"IEA Coal Mid-Year Update 2026"},{"factor":"indo","label":"Pasokan/ekspor Indonesia (RKAB, DSI)","group":"Pasokan","link":"Langsung","elasticity":-0.6,"lag_m":3,"bearish":10,"base":0,"bullish":-10,"unit":"% vs ekspektasi","basis":"RKAB 2026 disetujui ~720 Mt (2025: 817 Mt); ekspor 2026 diproyeksi ~495 Mt (2025: 517 Mt); transisi eksportir DSI","source":"BCA Sekuritas 30 Sep 2026; IEA 2026"},{"factor":"jkm","label":"Harga LNG JKM","group":"Energi alternatif","link":"Tidak langsung","elasticity":0.1,"lag_m":1,"bearish":-20,"base":0,"bullish":25,"unit":"% vs ekspektasi","basis":"Krisis Timur Tengah & LNG ketat mendorong gas-to-coal switching di Asia (Okt 2026)","source":"IEA 2026; The Coal Hub 1 Okt 2026"},{"factor":"freight","label":"Tarif freight kapal curah","group":"Faktor pendukung","link":"Tidak langsung","elasticity":-0.05,"lag_m":1,"bearish":-10,"base":0,"bullish":10,"unit":"% vs ekspektasi","basis":"Freight naik menekan netback FOB; efek kecil","source":"Asumsi analis"},{"factor":"weather","label":"Cuaca/musim (La Niña, musim dingin)","group":"Faktor pendukung","link":"Kondisional","elasticity":1.0,"lag_m":1,"bearish":-2,"base":0,"bullish":3,"unit":"% dampak langsung","basis":"Musim dingin Asia Utara menaikkan permintaan; hujan lebat ganggu produksi Kalimantan","source":"Asumsi analis"}],"hpb_monthly":[{"ym":"2024-04","hpb5800":101.82,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-05","hpb5800":107.82,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-06","hpb5800":103.95,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-07","hpb5800":107.92,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-08","hpb5800":100.92,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-09","hpb5800":99.45,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-10","hpb5800":92.86,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-11","hpb5800":97.53,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2024-12","hpb5800":95.21,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-01","hpb5800":98.14,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-02","hpb5800":96.04,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-03","hpb5800":94.11,"hpb6500":null,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-04","hpb5800":99.12,"hpb6500":123.58,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-05","hpb5800":93.31,"hpb6500":113.49,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-06","hpb5800":86.95,"hpb6500":101.39,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-07","hpb5800":86.63,"hpb6500":100.4,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-08","hpb5800":83.77,"hpb6500":103.52,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-09","hpb5800":83.76,"hpb6500":106.4,"src":"File perusahaan (Historical Market Index); ICI 2 & HPB 6500 tertukar di file asli; diperbaiki"},{"ym":"2025-10","hpb5800":88.56,"hpb6500":112.83,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-11","hpb5800":84.48,"hpb6500":104.9,"src":"File perusahaan (Historical Market Index)"},{"ym":"2025-12","hpb5800":87.59,"hpb6500":106.21,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-01","hpb5800":87.64,"hpb6500":106.96,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-02","hpb5800":89.82,"hpb6500":109.1,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-03","hpb5800":87.1,"hpb6500":105.91,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-04","hpb5800":90.39,"hpb6500":106.34,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-05","hpb5800":102.97,"hpb6500":125.26,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-06","hpb5800":105.94,"hpb6500":127.4,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-07","hpb5800":110.65,"hpb6500":135.36,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-08","hpb5800":110.27,"hpb6500":127.55,"src":"File perusahaan (Historical Market Index)"},{"ym":"2026-09","hpb5800":108.53,"hpb6500":127.02,"src":"File perusahaan (Historical Market Index)"}],"ici_monthly":[{"ym":"2023-01","ici1":230.66,"ici2":150.18,"kind12":"weekly 6 Jan 2023","ici3":113.38,"ici4":87.55,"ici5":51.79,"kind345":"weekly 6 Jan 2023","src":"ICI 1–5: Argus/Coalindo report 6 Jan 2023","kind":"weekly 6 Jan 2023"},{"ym":"2023-11","ici1":118.75,"ici2":92.89,"kind12":"monthly avg","ici3":79.71,"ici4":58.35,"ici5":38.38,"kind345":"monthly avg","src":"ICI 1–5: Argus/Coalindo report 16 Feb 2024","kind":"monthly avg"},{"ym":"2023-12","ici1":118.48,"ici2":92.9,"kind12":"monthly avg","ici3":79.64,"ici4":58.28,"ici5":38.0,"kind345":"monthly avg","src":"ICI 1–5: Argus/Coalindo report 16 Feb 2024","kind":"monthly avg"},{"ym":"2024-01","ici1":119.91,"ici2":92.97,"kind12":"monthly avg","ici3":79.4,"ici4":57.54,"ici5":37.27,"kind345":"monthly avg","src":"ICI 1–5: Argus/Coalindo report 16 Feb 2024","kind":"monthly avg"},{"ym":"2024-02","ici1":118.22,"ici2":93.28,"kind12":"monthly avg","ici3":78.95,"ici4":56.95,"ici5":36.8,"kind345":"monthly avg","src":"ICI 1–5: Argus/Coalindo report 17 May 2024","kind":"monthly avg"},{"ym":"2024-03","ici1":121.69,"ici2":95.36,"kind12":"monthly avg","ici3":78.22,"ici4":57.2,"ici5":36.53,"kind345":"monthly avg","src":"ICI 1–5: Argus/Coalindo report 17 May 2024","kind":"monthly avg"},{"ym":"2024-04","ici1":119.5,"ici2":91.46,"kind12":"rata-rata bulanan (file perusahaan)","ici3":72.5,"ici4":54.51,"ici5":34.55,"kind345":"monthly avg","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 17 May 2024","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-05","ici1":125.37,"ici2":95.42,"kind12":"rata-rata bulanan (file perusahaan)","ici3":73.94,"ici4":56.25,"ici5":35.47,"kind345":"weekly 17 May 2024","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 17 May 2024","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-06","ici1":126.17,"ici2":95.14,"kind12":"rata-rata bulanan (file perusahaan)","ici3":72.25,"ici4":53.92,"ici5":33.8,"kind345":"avg 2 weekly (21 & 28 Jun)","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Agromer (ICI weekly)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-07","ici1":123.57,"ici2":92.29,"kind12":"rata-rata bulanan (file perusahaan)","ici3":71.67,"ici4":52.58,"ici5":32.71,"kind345":"avg 2 weekly (19 & 26 Jul)","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Agromer (ICI weekly)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-08","ici1":127.73,"ici2":92.75,"kind12":"rata-rata bulanan (file perusahaan)","ici3":72.14,"ici4":51.5,"ici5":31.96,"kind345":"avg 2 weekly (8 & 16 Aug)","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Agromer (ICI weekly)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-09","ici1":128.52,"ici2":92.74,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-10","ici1":129.66,"ici2":93.67,"kind12":"rata-rata bulanan (file perusahaan)","ici3":73.25,"ici4":52.24,"ici5":32.14,"kind345":"monthly avg","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 17 Jan 2025","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-11","ici1":131.72,"ici2":93.93,"kind12":"rata-rata bulanan (file perusahaan)","ici3":73.32,"ici4":52.24,"ici5":32.34,"kind345":"monthly avg","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 17 Jan 2025","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2024-12","ici1":127.43,"ici2":92.51,"kind12":"rata-rata bulanan (file perusahaan)","ici3":72.46,"ici4":50.94,"ici5":31.41,"kind345":"monthly avg","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 17 Jan 2025","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-01","ici1":118.12,"ici2":87.72,"kind12":"rata-rata bulanan (file perusahaan)","ici3":70.09,"ici4":49.11,"ici5":30.07,"kind345":"weekly 17 Jan 2025","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 17 Jan 2025","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-02","ici1":112.57,"ici2":85.75,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-03","ici1":110.41,"ici2":84.97,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-04","ici1":107.44,"ici2":81.96,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-05","ici1":102.7,"ici2":77.74,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-06","ici1":99.09,"ici2":73.85,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-07","ici1":97.92,"ici2":73.08,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-08","ici1":100.21,"ici2":75.71,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-09","ici1":99.73,"ici2":76.2,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 2 & HPB 6500 tertukar di file asli; diperbaiki","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-10","ici1":100.4,"ici2":77.38,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-11","ici1":102.5,"ici2":80.87,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2025-12","ici1":102.49,"ici2":80.38,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-01","ici1":103.11,"ici2":81.2,"kind12":"rata-rata bulanan (file perusahaan)","ici3":61.9,"ici4":46.7,"ici5":31.46,"kind345":"monthly avg","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 27 Mar 2026","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-02","ici1":106.65,"ici2":84.7,"kind12":"rata-rata bulanan (file perusahaan)","ici3":67.76,"ici4":52.22,"ici5":34.01,"kind345":"monthly avg","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 27 Mar 2026","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-03","ici1":114.36,"ici2":88.84,"kind12":"rata-rata bulanan (file perusahaan)","ici3":73.84,"ici4":59.63,"ici5":36.1,"kind345":"monthly avg (s.d. 27 Mar)","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: Argus/Coalindo report 27 Mar 2026","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-04","ici1":118.7,"ici2":91.14,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-05","ici1":124.99,"ici2":105.14,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-06","ici1":128.11,"ici2":107.13,"kind12":"rata-rata bulanan (file perusahaan)","ici3":84.83,"ici4":65.92,"ici5":41.54,"kind345":"weekly 26 Jun 2026","src":"ICI 1–2: file perusahaan (Historical Market Index); ICI 3–5: indonesiacokingcoal.com","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-07","ici1":125.74,"ici2":102.35,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-08","ici1":126.22,"ici2":102.22,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"},{"ym":"2026-09","ici1":135.43,"ici2":111.94,"kind12":"rata-rata bulanan (file perusahaan)","ici3":null,"ici4":null,"ici5":null,"kind345":null,"src":"ICI 1–2: file perusahaan (Historical Market Index)","kind":"rata-rata bulanan (file perusahaan)"}],"actual_monthly":[],"shipments":[],"data_notes":[{"key":"p1","topic":"ICI","detail":"ICI 1–2 Apr 2024–Sep 2026 dari file perusahaan (sheet Historical Market Index; Sep 2025 dikoreksi dari kolom yang tertukar). Bulan lain dan ICI 3–5 dari sumber publik (rata-rata bulanan sampel laporan Argus/Coalindo atau harga mingguan).","status":"Info"},{"key":"p2","topic":"Harga aktual perusahaan","detail":"Tidak disertakan di situs. Muat file CSV internal lewat ‘Impor banyak baris (CSV)’ pada tab Tren; data tersimpan hanya di browser Anda.","status":"Info"},{"key":"p3","topic":"HPB","detail":"HPB 5.800 & 6.500 GAR dari file perusahaan (Apr 2024–Sep 2026); Sep 2025 HPB 6.500 dikoreksi dari kolom yang tertukar.","status":"Info"}],"__params":{"from":"2023-01","to":"2026-10"}};</script>
+<script>
+/* Pengganti ringan API dashboard: semua data tertanam di file ini, tanpa server. */
+window.__STANDALONE__ = true;
+window.__store = {
+  load(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
+  save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* abaikan */ } },
+};
+window.dash = (() => {
+  const DS = window.__DATA__;
+  const calcs = {}, cache = {}, subs = [];
+  const defaults = { from: DS.__params.from, to: DS.__params.to };
+  let params = { ...defaults };
+  const rows = (id) => {
+    if (DS[id]) return DS[id];
+    if (cache[id]) return cache[id];
+    const c = calcs[id];
+    if (!c) return null;
+    cache[id] = c.fn(...c.inputs.map(rows));
+    return cache[id];
+  };
+  let pending = false;
+  const run = () => {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; subs.forEach((f) => { try { f(); } catch (e) { console.error(e); } }); });
+  };
+  let lastW = window.innerWidth;
+  window.addEventListener('resize', () => { if (window.innerWidth !== lastW) { lastW = window.innerWidth; run(); } });
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const palette = () => (mq.matches
+    ? ['#6ea8fe', '#f0a35e', '#5cc8a8', '#c99bf2', '#f07c9e', '#9fc65a', '#e6c84a', '#7fd0e6']
+    : ['#2f6fdb', '#d9822b', '#1f9e7a', '#8a5bd1', '#d4497a', '#6e9a2e', '#b8961a', '#2a9bb8']);
+  const api = {
+    colors: palette(),
+    data(id) {
+      try {
+        const r = rows(id);
+        if (r == null) return { status: 'missing', data: [], columns: [] };
+        return { status: 'ok', data: r, columns: r[0] ? Object.keys(r[0]) : [], rows: r, refreshing: false, meta: [] };
+      } catch (e) {
+        console.error('calc ' + id, e);
+        return { status: 'error', data: [], columns: [], message: String(e) };
+      }
+    },
+    calc(id, o) { calcs[id] = o; delete cache[id]; },
+    loader() {},
+    onData(fn) { subs.push(fn); try { fn(); } catch (e) { console.error(e); } },
+    params() { return { ...params }; },
+    setParams(p) { params = { ...params, ...p }; run(); },
+    resetParams() { params = { ...defaults }; run(); },
+    setLink(name) { try { history.replaceState(null, '', '#' + name); } catch (e) { /* abaikan */ } },
+    refresh() { run(); },
+  };
+  mq.addEventListener && mq.addEventListener('change', () => { api.colors = palette(); location.reload(); });
+  return api;
+})();
+</script>
+<script>
+/* ---------- calcs ---------- */
+dash.calc('kpi', {
+  title: 'HBA terakhir & perubahan',
+  description: 'Nilai bulan terakhir tiap kategori HBA dan perubahan % dari bulan sebelumnya yang tersedia.',
+  inputs: ['hba_monthly'],
+  fn: (hba_monthly) => ['hba', 'hba1', 'hba2', 'hba3'].map((metric) => {
+    const r = hba_monthly.filter((x) => x[metric] != null && x[metric] !== '');
+    const a = r[r.length - 1], b = r[r.length - 2];
+    return { metric, ym: a.ym, latest: Number(a[metric]), prev: Number(b[metric]), change: Number(a[metric]) / Number(b[metric]) - 1 };
+  }),
+});
+
+dash.calc('spread_summary', {
+  title: 'Selisih harga jual vs benchmark',
+  description: 'Metode sheet Monthly Price Analysis: selling price dikurangi ICI 2 dan HPB 5.800 acuan pada bulan penjualan yang sama; rata-rata sederhana dan tertimbang volume.',
+  inputs: ['actual_monthly'],
+  fn: (actual_monthly) => [['ici2', 'ici_ref'], ['hpb5800', 'hpb_ref']].map(([metric, ref]) => {
+    const rows = actual_monthly.filter((a) => a[ref] != null && a[ref] !== '' && a.selling_price != null);
+    const d = rows.map((a) => ({ d: Number(a.selling_price) - Number(a[ref]), v: Number(a.volume_t), ym: a.ym }));
+    const vol = d.reduce((s, p) => s + p.v, 0);
+    return {
+      metric, n: d.length, volume_t: vol,
+      avg: d.length ? d.reduce((s, p) => s + p.d, 0) / d.length : null,
+      wavg: vol ? d.reduce((s, p) => s + p.d * p.v, 0) / vol : null,
+      from: d.length ? d[0].ym : null, to: d.length ? d[d.length - 1].ym : null,
+    };
+  }),
+});
+
+dash.calc('sim_preset', {
+  title: 'Simulasi skenario preset',
+  description: 'Jalur harga 12 bulan untuk HBA, HBA I–III, HPB 5.800 dan ICI 1–2 (bila ≥24 titik bulanan) pada skenario Bearish, Base dan Bullish.',
+  inputs: ['hba_monthly', 'ici_monthly', 'hpb_monthly', 'nc_forward', 'sim_factors', 'model_params'],
+  fn: (hba_monthly, ici_monthly, hpb_monthly, nc_forward, sim_factors, model_params) => {
+    function engine(hist, fwd, factors, shocks, params, kMax) {
+      // hist: [{ym, v}] berurutan; fwd: [{ym, ncf}]; shocks: {factorId: nilai %}
+      const P = Object.fromEntries(params.map((r) => [r.param, r.value]));
+      const y = hist.map((r) => Math.log(r.v));
+      const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
+      const ar1 = (s) => {
+        const x = s.slice(0, -1), z = s.slice(1), mx = mean(x), mz = mean(z);
+        let num = 0, den = 0;
+        x.forEach((xi, i) => { num += (xi - mx) * (z[i] - mz); den += (xi - mx) ** 2; });
+        const b = den ? num / den : 1;
+        return { a: mz - b * mx, b };
+      };
+      const fcs = (s, k) => {
+        const f = ar1(s);
+        let v = s[s.length - 1];
+        for (let i = 0; i < k; i++) v = f.a + f.b * v;
+        return {
+          naive: Math.exp(s[s.length - 1]),
+          ar1: Math.exp(v),
+          ma12: Math.exp(mean(s.slice(-12))),
+        };
+      };
+      const models = ['naive', 'ar1', 'ma12'];
+      const bt = {};
+      [3, 6, 12].forEach((h) => {
+        const se = { naive: [], ar1: [], ma12: [] }, dir = { naive: [], ar1: [], ma12: [] };
+        for (let t = 12; t < y.length - h; t++) {
+          const f = fcs(y.slice(0, t + 1), h), act = hist[t + h].v, last = hist[t].v;
+          models.forEach((m) => {
+            se[m].push(f[m] - act);
+            if (m !== 'naive') dir[m].push((f[m] - last) * (act - last) > 0 ? 1 : 0);
+          });
+        }
+        bt[h] = {};
+        models.forEach((m) => {
+          const e = se[m];
+          bt[h][m] = e.length ? {
+            n: e.length,
+            mae: mean(e.map(Math.abs)),
+            rmse: Math.sqrt(mean(e.map((x) => x * x))),
+            dir: dir[m].length ? 100 * mean(dir[m]) : null,
+          } : null;
+        });
+      });
+      const wts = (h) => {
+        const inv = models.map((m) => (bt[h][m] ? 1 / (bt[h][m].rmse ** 2) : 0));
+        const s = inv.reduce((a, b) => a + b, 0);
+        return s ? inv.map((x) => x / s) : [1 / 3, 1 / 3, 1 / 3];
+      };
+      const W = { 3: wts(3), 6: wts(6), 12: wts(12) };
+      const wAt = (k) => {
+        if (k <= 3) return W[3];
+        const [a, b, t] = k <= 6 ? [W[3], W[6], (k - 3) / 3] : [W[6], W[12], (k - 6) / 6];
+        return a.map((x, i) => x * (1 - t) + b[i] * t);
+      };
+      const rets = y.slice(1).map((v, i) => v - y[i]);
+      const mr = mean(rets);
+      const sigma = Math.sqrt(mean(rets.map((r) => (r - mr) ** 2)));
+      const lastYm = hist[hist.length - 1].ym;
+      const addM = (ym, k) => {
+        const [Y, M] = ym.split('-').map(Number);
+        const d = new Date(Date.UTC(Y, M - 1 + k, 1));
+        return d.toISOString().slice(0, 7);
+      };
+      const f0 = fwd.find((r) => r.ym === lastYm) || fwd[0];
+      const out = [];
+      for (let k = 1; k <= kMax; k++) {
+        const f = fcs(y, k), w = wAt(k);
+        const stat = models.reduce((s, m, i) => s + w[i] * f[m], 0);
+        const ym = addM(lastYm, k);
+        const fr = fwd.find((r) => r.ym === ym) || fwd[fwd.length - 1];
+        const fcMult = 1 + Number(P.fc_pass_through) * (fr.ncf / f0.ncf - 1);
+        let impact = 0;
+        factors.forEach((fa) => {
+          const s = Number(shocks[fa.factor] || 0) / 100;
+          impact += Number(fa.elasticity) * s * Math.min(1, k / Number(fa.lag_m));
+        });
+        const v = stat * fcMult * (1 + impact);
+        const band = Number(P.band_z) * sigma * Math.sqrt(k);
+        out.push({ k, ym, stat, value: v, lo: v * Math.exp(-band), hi: v * Math.exp(band), impact });
+      }
+      return { path: out, bt, weights: W, sigma, lastYm, lastV: hist[hist.length - 1].v };
+    }
+    const par = (k) => (model_params.find((r) => r.param === k) || {}).value;
+    const SIMS = [['hba', hba_monthly, 'hba', 'model_start'], ['hba1', hba_monthly, 'hba1', 'model_start'], ['hba2', hba_monthly, 'hba2', 'model_start'],
+      ['hba3', hba_monthly, 'hba3', 'model_start'], ['hpb58', hpb_monthly, 'hpb5800', 'model_start_hpb'], ['ici2', ici_monthly, 'ici2', 'model_start_ici'], ['ici1', ici_monthly, 'ici1', 'model_start_ici']];
+    const fwd = nc_forward.map((r) => ({ ym: r.ym, ncf: Number(r.ncf) }));
+    const rows = [];
+    SIMS.forEach(([series, data, col, sk]) => {
+      const hist = data.filter((r) => r.ym >= par(sk) && r[col] != null && r[col] !== '').map((r) => ({ ym: r.ym, v: Number(r[col]) }));
+      if (hist.length < Number(par('min_points'))) return;
+      ['bearish', 'base', 'bullish'].forEach((scenario) => {
+        const shocks = Object.fromEntries(sim_factors.map((f) => [f.factor, Number(f[scenario])]));
+        engine(hist, fwd, sim_factors, shocks, model_params, 12).path
+          .forEach((p) => rows.push({ key: `${series}|${scenario}|${p.k}`, series, scenario, k: p.k, ym: p.ym, value: p.value, lo: p.lo, hi: p.hi }));
+      });
+    });
+    return rows;
+  },
+});
+
+dash.calc('sim_summary', {
+  title: 'Ringkasan proyeksi 3/6/12 bulan',
+  description: 'Nilai skenario pada bulan ke-3, ke-6 dan ke-12, serta pita 80% bulan ke-12.',
+  inputs: ['sim_preset'],
+  fn: (sim_preset) => {
+    const out = [];
+    [...new Set(sim_preset.map((r) => r.series))].forEach((series) => ['bearish', 'base', 'bullish'].forEach((scenario) => {
+      const at = (k) => sim_preset.find((r) => r.series === series && r.scenario === scenario && r.k === k);
+      out.push({ key: `${series}|${scenario}`, series, scenario, m3: at(3).value, m6: at(6).value, m12: at(12).value, lo12: at(12).lo, hi12: at(12).hi });
+    }));
+    return out;
+  },
+});
+
+dash.calc('backtest', {
+  title: 'Backtest model',
+  description: 'MAE, RMSE dan akurasi arah tiap model per horizon (expanding window) dan bobot ensemble, per seri yang disimulasikan.',
+  inputs: ['hba_monthly', 'ici_monthly', 'hpb_monthly', 'nc_forward', 'sim_factors', 'model_params'],
+  fn: (hba_monthly, ici_monthly, hpb_monthly, nc_forward, sim_factors, model_params) => {
+    function engine(hist, fwd, factors, shocks, params, kMax) {
+      // hist: [{ym, v}] berurutan; fwd: [{ym, ncf}]; shocks: {factorId: nilai %}
+      const P = Object.fromEntries(params.map((r) => [r.param, r.value]));
+      const y = hist.map((r) => Math.log(r.v));
+      const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
+      const ar1 = (s) => {
+        const x = s.slice(0, -1), z = s.slice(1), mx = mean(x), mz = mean(z);
+        let num = 0, den = 0;
+        x.forEach((xi, i) => { num += (xi - mx) * (z[i] - mz); den += (xi - mx) ** 2; });
+        const b = den ? num / den : 1;
+        return { a: mz - b * mx, b };
+      };
+      const fcs = (s, k) => {
+        const f = ar1(s);
+        let v = s[s.length - 1];
+        for (let i = 0; i < k; i++) v = f.a + f.b * v;
+        return {
+          naive: Math.exp(s[s.length - 1]),
+          ar1: Math.exp(v),
+          ma12: Math.exp(mean(s.slice(-12))),
+        };
+      };
+      const models = ['naive', 'ar1', 'ma12'];
+      const bt = {};
+      [3, 6, 12].forEach((h) => {
+        const se = { naive: [], ar1: [], ma12: [] }, dir = { naive: [], ar1: [], ma12: [] };
+        for (let t = 12; t < y.length - h; t++) {
+          const f = fcs(y.slice(0, t + 1), h), act = hist[t + h].v, last = hist[t].v;
+          models.forEach((m) => {
+            se[m].push(f[m] - act);
+            if (m !== 'naive') dir[m].push((f[m] - last) * (act - last) > 0 ? 1 : 0);
+          });
+        }
+        bt[h] = {};
+        models.forEach((m) => {
+          const e = se[m];
+          bt[h][m] = e.length ? {
+            n: e.length,
+            mae: mean(e.map(Math.abs)),
+            rmse: Math.sqrt(mean(e.map((x) => x * x))),
+            dir: dir[m].length ? 100 * mean(dir[m]) : null,
+          } : null;
+        });
+      });
+      const wts = (h) => {
+        const inv = models.map((m) => (bt[h][m] ? 1 / (bt[h][m].rmse ** 2) : 0));
+        const s = inv.reduce((a, b) => a + b, 0);
+        return s ? inv.map((x) => x / s) : [1 / 3, 1 / 3, 1 / 3];
+      };
+      const W = { 3: wts(3), 6: wts(6), 12: wts(12) };
+      const wAt = (k) => {
+        if (k <= 3) return W[3];
+        const [a, b, t] = k <= 6 ? [W[3], W[6], (k - 3) / 3] : [W[6], W[12], (k - 6) / 6];
+        return a.map((x, i) => x * (1 - t) + b[i] * t);
+      };
+      const rets = y.slice(1).map((v, i) => v - y[i]);
+      const mr = mean(rets);
+      const sigma = Math.sqrt(mean(rets.map((r) => (r - mr) ** 2)));
+      const lastYm = hist[hist.length - 1].ym;
+      const addM = (ym, k) => {
+        const [Y, M] = ym.split('-').map(Number);
+        const d = new Date(Date.UTC(Y, M - 1 + k, 1));
+        return d.toISOString().slice(0, 7);
+      };
+      const f0 = fwd.find((r) => r.ym === lastYm) || fwd[0];
+      const out = [];
+      for (let k = 1; k <= kMax; k++) {
+        const f = fcs(y, k), w = wAt(k);
+        const stat = models.reduce((s, m, i) => s + w[i] * f[m], 0);
+        const ym = addM(lastYm, k);
+        const fr = fwd.find((r) => r.ym === ym) || fwd[fwd.length - 1];
+        const fcMult = 1 + Number(P.fc_pass_through) * (fr.ncf / f0.ncf - 1);
+        let impact = 0;
+        factors.forEach((fa) => {
+          const s = Number(shocks[fa.factor] || 0) / 100;
+          impact += Number(fa.elasticity) * s * Math.min(1, k / Number(fa.lag_m));
+        });
+        const v = stat * fcMult * (1 + impact);
+        const band = Number(P.band_z) * sigma * Math.sqrt(k);
+        out.push({ k, ym, stat, value: v, lo: v * Math.exp(-band), hi: v * Math.exp(band), impact });
+      }
+      return { path: out, bt, weights: W, sigma, lastYm, lastV: hist[hist.length - 1].v };
+    }
+    const par = (k) => (model_params.find((r) => r.param === k) || {}).value;
+    const SIMS = [['hba', hba_monthly, 'hba', 'model_start'], ['hba1', hba_monthly, 'hba1', 'model_start'], ['hba2', hba_monthly, 'hba2', 'model_start'],
+      ['hba3', hba_monthly, 'hba3', 'model_start'], ['hpb58', hpb_monthly, 'hpb5800', 'model_start_hpb'], ['ici2', ici_monthly, 'ici2', 'model_start_ici'], ['ici1', ici_monthly, 'ici1', 'model_start_ici']];
+    const fwd = nc_forward.map((r) => ({ ym: r.ym, ncf: Number(r.ncf) }));
+    const rows = [];
+    SIMS.forEach(([series, data, col, sk]) => {
+      const hist = data.filter((r) => r.ym >= par(sk) && r[col] != null && r[col] !== '').map((r) => ({ ym: r.ym, v: Number(r[col]) }));
+      if (hist.length < Number(par('min_points'))) return;
+      const res = engine(hist, fwd, sim_factors, {}, model_params, 1);
+      [3, 6, 12].forEach((h) => ['naive', 'ar1', 'ma12'].forEach((model, i) => {
+        const b = res.bt[h][model];
+        if (b) rows.push({ key: `${series}|${model}|${h}`, series, model, h, n: b.n, mae: b.mae, rmse: b.rmse, dir: b.dir, weight: res.weights[h][i], sigma: res.sigma, start: hist[0].ym });
+      }));
+    });
+    return rows;
+  },
+});
+
+function engine(hist, fwd, factors, shocks, params, kMax) {
+  // hist: [{ym, v}] berurutan; fwd: [{ym, ncf}]; shocks: {factorId: nilai %}
+  const P = Object.fromEntries(params.map((r) => [r.param, r.value]));
+  const y = hist.map((r) => Math.log(r.v));
+  const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
+  const ar1 = (s) => {
+    const x = s.slice(0, -1), z = s.slice(1), mx = mean(x), mz = mean(z);
+    let num = 0, den = 0;
+    x.forEach((xi, i) => { num += (xi - mx) * (z[i] - mz); den += (xi - mx) ** 2; });
+    const b = den ? num / den : 1;
+    return { a: mz - b * mx, b };
+  };
+  const fcs = (s, k) => {
+    const f = ar1(s);
+    let v = s[s.length - 1];
+    for (let i = 0; i < k; i++) v = f.a + f.b * v;
+    return {
+      naive: Math.exp(s[s.length - 1]),
+      ar1: Math.exp(v),
+      ma12: Math.exp(mean(s.slice(-12))),
+    };
+  };
+  const models = ['naive', 'ar1', 'ma12'];
+  const bt = {};
+  [3, 6, 12].forEach((h) => {
+    const se = { naive: [], ar1: [], ma12: [] }, dir = { naive: [], ar1: [], ma12: [] };
+    for (let t = 12; t < y.length - h; t++) {
+      const f = fcs(y.slice(0, t + 1), h), act = hist[t + h].v, last = hist[t].v;
+      models.forEach((m) => {
+        se[m].push(f[m] - act);
+        if (m !== 'naive') dir[m].push((f[m] - last) * (act - last) > 0 ? 1 : 0);
+      });
+    }
+    bt[h] = {};
+    models.forEach((m) => {
+      const e = se[m];
+      bt[h][m] = e.length ? {
+        n: e.length,
+        mae: mean(e.map(Math.abs)),
+        rmse: Math.sqrt(mean(e.map((x) => x * x))),
+        dir: dir[m].length ? 100 * mean(dir[m]) : null,
+      } : null;
+    });
+  });
+  const wts = (h) => {
+    const inv = models.map((m) => (bt[h][m] ? 1 / (bt[h][m].rmse ** 2) : 0));
+    const s = inv.reduce((a, b) => a + b, 0);
+    return s ? inv.map((x) => x / s) : [1 / 3, 1 / 3, 1 / 3];
+  };
+  const W = { 3: wts(3), 6: wts(6), 12: wts(12) };
+  const wAt = (k) => {
+    if (k <= 3) return W[3];
+    const [a, b, t] = k <= 6 ? [W[3], W[6], (k - 3) / 3] : [W[6], W[12], (k - 6) / 6];
+    return a.map((x, i) => x * (1 - t) + b[i] * t);
+  };
+  const rets = y.slice(1).map((v, i) => v - y[i]);
+  const mr = mean(rets);
+  const sigma = Math.sqrt(mean(rets.map((r) => (r - mr) ** 2)));
+  const lastYm = hist[hist.length - 1].ym;
+  const addM = (ym, k) => {
+    const [Y, M] = ym.split('-').map(Number);
+    const d = new Date(Date.UTC(Y, M - 1 + k, 1));
+    return d.toISOString().slice(0, 7);
+  };
+  const f0 = fwd.find((r) => r.ym === lastYm) || fwd[0];
+  const out = [];
+  for (let k = 1; k <= kMax; k++) {
+    const f = fcs(y, k), w = wAt(k);
+    const stat = models.reduce((s, m, i) => s + w[i] * f[m], 0);
+    const ym = addM(lastYm, k);
+    const fr = fwd.find((r) => r.ym === ym) || fwd[fwd.length - 1];
+    const fcMult = 1 + Number(P.fc_pass_through) * (fr.ncf / f0.ncf - 1);
+    let impact = 0;
+    factors.forEach((fa) => {
+      const s = Number(shocks[fa.factor] || 0) / 100;
+      impact += Number(fa.elasticity) * s * Math.min(1, k / Number(fa.lag_m));
+    });
+    const v = stat * fcMult * (1 + impact);
+    const band = Number(P.band_z) * sigma * Math.sqrt(k);
+    out.push({ k, ym, stat, value: v, lo: v * Math.exp(-band), hi: v * Math.exp(band), impact });
+  }
+  return { path: out, bt, weights: W, sigma, lastYm, lastV: hist[hist.length - 1].v };
+}
+
+window.engine = engine;
+</script>
+
+<script>
+(() => {
+  const STANDALONE = !!window.__STANDALONE__;
+  const loc = d3.formatLocale({ decimal: ',', thousands: '.', grouping: [3], currency: ['US$', ''] });
+  const f2 = loc.format(',.2f'), f1 = loc.format(',.1f'), pct = loc.format('+.1%'), pct0 = loc.format('.0%'), int = loc.format(',d');
+  const sgn = (v) => (v > 0 ? '+' : '') + f2(v);
+  const usd = (v) => (v == null || isNaN(v) ? '—' : 'US$' + f2(v));
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const mmyy = (ym) => ym.slice(5, 7) + '/' + ym.slice(2, 4);
+  const monName = (ym) => MON[Number(ym.slice(5, 7)) - 1] + ' ' + ym.slice(0, 4);
+  const toDate = (ym) => new Date(Date.UTC(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1, 1));
+  const addM = (ym, k) => { const d = toDate(ym); d.setUTCMonth(d.getUTCMonth() + k); return d.toISOString().slice(0, 7); };
+  const num = (v) => (v == null || v === '' || isNaN(Number(v)) ? null : Number(v));
+  const SCN = { bearish: 'Bearish', base: 'Base', bullish: 'Bullish' };
+  const C = dash.colors;
+  const SERIES = [
+    { id: 'hba', label: 'HBA 6.322 GAR', ds: 'hba_monthly', col: 'hba', on: true, color: C[0] },
+    { id: 'hba1', label: 'HBA I 5.300 GAR', ds: 'hba_monthly', col: 'hba1', on: true, color: C[1] },
+    { id: 'hba2', label: 'HBA II 4.100 GAR', ds: 'hba_monthly', col: 'hba2', on: false, color: C[2] },
+    { id: 'hba3', label: 'HBA III 3.400 GAR', ds: 'hba_monthly', col: 'hba3', on: false, color: C[3] },
+    { id: 'hpb58', label: 'HPB 5.800 GAR', ds: 'hpb_monthly', col: 'hpb5800', on: true, color: C[4], dash: '1 4' },
+    { id: 'hpb65', label: 'HPB 6.500 GAR', ds: 'hpb_monthly', col: 'hpb6500', on: false, color: C[7], dash: '1 4' },
+    { id: 'ici1', label: 'ICI 1 6.500 GAR', ds: 'ici_monthly', col: 'ici1', on: false, color: C[5], dash: '6 4' },
+    { id: 'ici2', label: 'ICI 2 5.800 GAR', ds: 'ici_monthly', col: 'ici2', on: true, color: C[6], dash: '6 4' },
+    { id: 'ici3', label: 'ICI 3 5.000 GAR', ds: 'ici_monthly', col: 'ici3', on: false, color: C[2], dash: '6 4' },
+    { id: 'ici4', label: 'ICI 4 4.200 GAR', ds: 'ici_monthly', col: 'ici4', on: false, color: C[3], dash: '6 4' },
+    { id: 'ici5', label: 'ICI 5 3.400 GAR', ds: 'ici_monthly', col: 'ici5', on: false, color: C[7], dash: '6 4' },
+    { id: 'act58', label: 'Aktual GAR ~5.800', ds: 'actual', on: true, color: 'var(--color-fg)', act: true },
+    { id: 'act64', label: 'Aktual GAR ~6.400', ds: 'actual', on: true, color: 'var(--color-fg-muted)', act: true },
+  ];
+  const byIdMeta = Object.fromEntries(SERIES.map((s) => [s.id, s]));
+  const benchOpts = SERIES.filter((s) => !s.act);
+  const state = { on: Object.fromEntries(SERIES.map((s) => [s.id, s.on])), page: 'trend', h: 12, extra: [], cmpAct: 'act58', cmp: 'ici2', basis: 'sell', simSeries: 'hba', simBench: { act58: 'ici2', act64: 'ici1' }, shocks: null };
+
+  /* ---------- persistence (web version only) ---------- */
+  const LS_KEY = 'coal_dashboard_actual_v2';
+  try { if (window.__store) { const saved = window.__store.load(LS_KEY); if (Array.isArray(saved)) state.extra = saved; } } catch (e) { /* abaikan */ }
+  const persist = () => { try { if (window.__store) window.__store.save(LS_KEY, state.extra); } catch (e) { /* abaikan */ } };
+  if (STANDALONE) { document.getElementById('in-note-claude').hidden = true; document.getElementById('in-note-web').hidden = false; document.getElementById('out-dl').hidden = false; }
+
+  /* ---------- tabs ---------- */
+  const tabs = [...document.querySelectorAll('.cx-tab')];
+  const showPage = (p) => {
+    state.page = p;
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.page === p)));
+    document.querySelectorAll('.cx-page').forEach((s) => { s.hidden = s.id !== p; });
+    dash.setLink(p);
+    draw();
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => showPage(t.dataset.page)));
+
+  /* ---------- range ---------- */
+  const fromSel = document.getElementById('from'), toSel = document.getElementById('to');
+  let months = [];
+  fromSel.addEventListener('change', () => { const p = { from: fromSel.value }; if (fromSel.value > (dash.params().to || '9999')) p.to = fromSel.value; dash.setParams(p); });
+  toSel.addEventListener('change', () => { const p = { to: toSel.value }; if (toSel.value < (dash.params().from || '0000')) p.from = toSel.value; dash.setParams(p); });
+  document.querySelectorAll('[data-range]').forEach((b) => b.addEventListener('click', () => {
+    if (!months.length) return;
+    const last = months[months.length - 1], r = b.dataset.range;
+    const from = r === 'all' ? months[0] : r === '2024' ? '2024-01' : addM(last, -(Number(r) - 1));
+    dash.setParams({ from, to: last });
+  }));
+
+  /* ---------- chips ---------- */
+  const chips = document.getElementById('chips');
+  SERIES.forEach((s) => {
+    const b = document.createElement('button');
+    b.className = 'cx-btn cx-chip'; b.dataset.s = s.id;
+    const dot = document.createElement('i'); dot.style.background = s.color;
+    b.append(dot, document.createTextNode(s.label));
+    b.setAttribute('aria-pressed', String(state.on[s.id]));
+    b.addEventListener('click', () => { state.on[s.id] = !state.on[s.id]; b.setAttribute('aria-pressed', String(state.on[s.id])); draw(); });
+    chips.append(b);
+  });
+
+  /* ---------- manual actual input ---------- */
+  const msg = document.getElementById('in-msg');
+  const parseYm = (t) => {
+    t = String(t || '').trim();
+    let m = t.match(/^(\d{1,2})[\/\-.](\d{2}|\d{4})$/);
+    if (m) { const mo = Number(m[1]), yr = m[2].length === 2 ? 2000 + Number(m[2]) : Number(m[2]); if (mo >= 1 && mo <= 12) return `${yr}-${String(mo).padStart(2, '0')}`; }
+    m = t.match(/^(\d{4})-(\d{1,2})(-\d{1,2})?$/);
+    if (m && Number(m[2]) >= 1 && Number(m[2]) <= 12) return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`;
+    return null;
+  };
+  const pnum = (t) => { if (t == null || String(t).trim() === '') return null; const v = Number(String(t).trim().replace(',', '.')); return isNaN(v) ? NaN : v; };
+  const gradeOf = (g, gar) => { const s = String(g || '').trim(); if (/64|65|62|act64/.test(s)) return 'act64'; if (/58|57|59|act58/.test(s)) return 'act58'; return gar && gar >= 6200 ? 'act64' : 'act58'; };
+  const upsert = (row) => {
+    const i = state.extra.findIndex((r) => r.ym === row.ym && r.series === row.series);
+    if (i >= 0) state.extra[i] = row; else state.extra.push(row);
+  };
+  document.getElementById('in-add').addEventListener('click', () => {
+    const ym = parseYm(document.getElementById('in-ym').value);
+    const price = pnum(document.getElementById('in-price').value);
+    if (!ym) { msg.textContent = 'Format bulan harus mm/yy, misalnya 09/26.'; return; }
+    if (price == null || isNaN(price) || price <= 0) { msg.textContent = 'Harga harus angka lebih dari 0.'; return; }
+    upsert({ ym, series: document.getElementById('in-grade').value, price, volume_t: pnum(document.getElementById('in-vol').value), gar: pnum(document.getElementById('in-gar').value) });
+    msg.textContent = '';
+    ['in-ym', 'in-price', 'in-vol'].forEach((id) => { document.getElementById(id).value = ''; });
+    persist(); draw();
+  });
+  const importText = (text) => {
+    const lines = String(text).split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    let ok = 0, bad = 0;
+    lines.forEach((l) => {
+      const c = l.split(/[;,\t]/).map((x) => x.trim());
+      const ym = parseYm(c[0]), price = pnum(c[1]);
+      if (!ym || price == null || isNaN(price) || price <= 0) { if (!/^(ym|bulan|month)/i.test(c[0])) bad++; return; }
+      const gar = pnum(c[3]);
+      const opt = (k) => { const v = pnum(c[k]); return v == null || isNaN(v) ? null : v; };
+      upsert({ ym, series: gradeOf(c[4], gar), price, volume_t: pnum(c[2]), gar: isNaN(gar) ? null : gar, selling_price: opt(5), ici_ref: opt(6), hpb_ref: opt(7) }); ok++;
+    });
+    msg.textContent = `${ok} baris diimpor${bad ? `, ${bad} baris dilewati (format tidak dikenali)` : ''}.`;
+    persist(); draw();
+  };
+  document.getElementById('in-paste-btn').addEventListener('click', () => importText(document.getElementById('in-paste').value));
+  document.getElementById('in-file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { importText(rd.result || ''); e.target.value = ''; };
+    rd.readAsText(f);
+  });
+  document.getElementById('in-clear').addEventListener('click', () => {
+    if (!state.extra.length) return;
+    if (STANDALONE && !confirm('Hapus semua harga aktual yang tersimpan di browser ini?')) return;
+    state.extra = []; persist(); draw();
+  });
+  document.getElementById('out-copy').addEventListener('click', () => {
+    const t = document.getElementById('out-csv'); t.select();
+    try { navigator.clipboard.writeText(t.value); } catch (e) { /* teks sudah terpilih */ }
+  });
+  document.getElementById('out-dl').addEventListener('click', () => {
+    const blob = new Blob([document.getElementById('out-csv').value + '\n'], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'harga_aktual_perusahaan.csv';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  /* ---------- selects ---------- */
+  const fillSel = (sel, opts, val) => { sel.replaceChildren(...opts.map((o) => new Option(o.label, o.id))); if (val != null) sel.value = val; };
+  const cmpSel = document.getElementById('cmp-bench'), cmpAct = document.getElementById('cmp-act');
+  fillSel(cmpSel, benchOpts, state.cmp);
+  fillSel(cmpAct, SERIES.filter((s) => s.act), state.cmpAct);
+  cmpSel.addEventListener('change', () => { state.cmp = cmpSel.value; draw(); });
+  const cmpBasis = document.getElementById('cmp-basis');
+  cmpBasis.addEventListener('change', () => { state.basis = cmpBasis.value; draw(); });
+  cmpAct.addEventListener('change', () => { state.cmpAct = cmpAct.value; state.cmp = cmpAct.value === 'act64' ? 'ici1' : 'ici2'; cmpSel.value = state.cmp; draw(); });
+  const simSel = document.getElementById('sim-series'), simBench = document.getElementById('sim-bench');
+  simSel.addEventListener('change', () => { state.simSeries = simSel.value; draw(); });
+  simBench.addEventListener('change', () => { state.simBench[state.simSeries] = simBench.value; draw(); });
+  document.querySelectorAll('[data-h]').forEach((b) => b.addEventListener('click', () => {
+    state.h = Number(b.dataset.h);
+    document.querySelectorAll('[data-h]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    draw();
+  }));
+  document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+    const f = dash.data('sim_factors');
+    if (f.status !== 'ok') return;
+    state.shocks = Object.fromEntries(f.data.map((r) => [r.factor, Number(r[b.dataset.preset])]));
+    buildSliders(f.data, true);
+    draw();
+  }));
+
+  /* ---------- sliders ---------- */
+  let slidersBuilt = false;
+  const buildSliders = (factors, force) => {
+    const box = document.getElementById('sliders');
+    if (slidersBuilt && !force) return;
+    if (!state.shocks) state.shocks = Object.fromEntries(factors.map((r) => [r.factor, Number(r.base)]));
+    box.replaceChildren(...factors.map((r) => {
+      const row = document.createElement('div'); row.className = 'cx-slider';
+      const lab = document.createElement('label'); lab.textContent = r.label; lab.htmlFor = 'sl-' + r.factor;
+      const inp = document.createElement('input'); inp.type = 'range'; inp.id = 'sl-' + r.factor;
+      const lim = Math.max(10, Math.ceil(Math.max(Math.abs(Number(r.bearish)), Math.abs(Number(r.bullish))) * 2 / 5) * 5);
+      inp.min = -lim; inp.max = lim; inp.step = 1; inp.value = state.shocks[r.factor];
+      const out = document.createElement('output'); out.textContent = (inp.value > 0 ? '+' : '') + inp.value + '%';
+      inp.addEventListener('input', () => { state.shocks[r.factor] = Number(inp.value); out.textContent = (inp.value > 0 ? '+' : '') + inp.value + '%'; drawSim(); });
+      row.append(lab, inp, out);
+      return row;
+    }));
+    slidersBuilt = true;
+  };
+
+  /* ---------- helpers ---------- */
+  const failBox = (el) => { el.classList.remove('dash-skeleton'); el.replaceChildren(); const d = document.createElement('div'); d.className = 'cx-fail'; d.append(document.createElement('i'), document.createTextNode('Failed to load')); el.append(d); };
+  const setChg = (el, v, label) => {
+    el.className = 'chg ' + (v > 0.0005 ? 'cx-up' : v < -0.0005 ? 'cx-down' : 'cx-flat');
+    el.textContent = `${pct(v)} ${label}`;
+  };
+  const tipBox = (host) => { let t = host.querySelector('.cx-tip'); if (!t) { t = document.createElement('div'); t.className = 'cx-tip'; host.append(t); } return t; };
+  const showTip = (host, tip, x, y, title, rows) => {
+    tip.replaceChildren();
+    const d = document.createElement('div'); d.className = 'd'; d.textContent = title; tip.append(d);
+    rows.forEach((r) => {
+      const line = document.createElement('div'); line.className = 'r';
+      const left = document.createElement('span'); const sw = document.createElement('i'); sw.style.background = r.color;
+      left.append(sw, document.createTextNode(r.name));
+      const right = document.createElement('span'); right.textContent = r.text;
+      line.append(left, right); tip.append(line);
+    });
+    tip.style.display = 'block';
+    const w = tip.offsetWidth, hw = host.clientWidth;
+    tip.style.left = Math.max(0, Math.min(hw - w, x + 12)) + 'px';
+    tip.style.top = Math.max(0, y - 10) + 'px';
+  };
+  const axisStyle = (g) => {
+    g.attr('font-size', null).attr('font-family', null);
+    g.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)');
+    g.selectAll('line').attr('stroke', 'var(--cds-chart-axis)');
+    g.select('.domain').attr('stroke', 'var(--cds-chart-axis)');
+  };
+
+  /* actual rows = file dataset + manual rows (manual overrides same month & class) */
+  const actualRows = () => {
+    const am = dash.data('actual_monthly');
+    const base = am.status === 'ok' ? am.data.map((r) => ({ ym: r.ym, series: r.series, price: num(r.price), selling_price: num(r.selling_price), ici_ref: num(r.ici_ref), hpb_ref: num(r.hpb_ref), volume_t: num(r.volume_t), gar: num(r.gar), shipments: num(r.shipments), src: 'file' })) : [];
+    const out = base.filter((b) => !state.extra.some((e) => e.ym === b.ym && e.series === b.series));
+    state.extra.forEach((e) => out.push({ ...e, src: 'manual' }));
+    return out.filter((r) => r.price).sort((a, b) => (a.ym + a.series).localeCompare(b.ym + b.series));
+  };
+  const buildSeries = () => {
+    const out = {};
+    SERIES.filter((s) => !s.act).forEach((s) => {
+      const d = dash.data(s.ds);
+      out[s.id] = d.status === 'ok' ? d.data.filter((r) => num(r[s.col]) != null).map((r) => ({ ym: r.ym, v: num(r[s.col]), kind: s.ds === 'ici_monthly' ? (['ici1', 'ici2'].includes(s.col) ? (r.kind12 || r.kind) : (r.kind345 || r.kind)) : null })) : [];
+    });
+    const act = actualRows();
+    ['act58', 'act64'].forEach((id) => { out[id] = act.filter((r) => r.series === id).map((r) => ({ ym: r.ym, v: r.price, vol: r.volume_t, sell: r.selling_price ?? r.price, ici_ref: r.ici_ref, hpb_ref: r.hpb_ref })); });
+    return out;
+  };
+
+  /* ---------- line chart ---------- */
+  const lineChart = (host, series, opts) => {
+    host.classList.remove('dash-skeleton');
+    const W = Math.max(280, host.clientWidth), H = opts.height || 360;
+    const all = series.flatMap((s) => s.pts.map((p) => ({ ...p, s })));
+    host.replaceChildren();
+    if (!all.length) { const p = document.createElement('p'); p.className = 'cx-note'; p.textContent = opts.empty || 'Tidak ada data pada rentang ini.'; host.append(p); return; }
+    const xs = all.map((p) => toDate(p.ym));
+    const yMax = d3.max(all, (p) => p.hi ?? p.v), yMin = d3.min(all, (p) => p.lo ?? p.v);
+    const svg = d3.select(host).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+    const y = d3.scaleLinear([Math.max(0, yMin * 0.9), yMax * 1.05], [H - 28, 12]).nice();
+    const yAx = svg.append('g');
+    yAx.call(d3.axisLeft(y).ticks(6).tickSize(0).tickFormat((v) => int(v)));
+    axisStyle(yAx);
+    const ml = Math.ceil(d3.max(yAx.selectAll('text').nodes(), (n) => n.getComputedTextLength()) || 20) + 12;
+    const mr = opts.endLabels ? 120 : 24;
+    const [x0, x1] = d3.extent(xs);
+    const x = d3.scaleUtc(x0.getTime() === x1.getTime() ? [d3.utcMonth.offset(x0, -1), d3.utcMonth.offset(x1, 1)] : [x0, x1], [ml, W - mr]);
+    yAx.attr('transform', `translate(${ml - 4},0)`); yAx.select('.domain').remove();
+    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(6)).join('line')
+      .attr('x1', ml).attr('x2', W - mr).attr('y1', (d) => y(d)).attr('y2', (d) => y(d)).attr('stroke', 'var(--cds-chart-grid)');
+    const nT = Math.max(2, Math.floor((W - ml - mr) / 70));
+    const xAx = svg.append('g').attr('transform', `translate(0,${H - 28})`).call(d3.axisBottom(x).ticks(nT).tickFormat((d) => mmyy(d.toISOString().slice(0, 7))));
+    axisStyle(xAx);
+    (opts.vlines || []).forEach((v) => {
+      const xv = x(toDate(v.ym));
+      if (xv < ml || xv > W - mr) return;
+      svg.append('line').attr('x1', xv).attr('x2', xv).attr('y1', 12).attr('y2', H - 28).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
+      svg.append('text').attr('x', xv + 4).attr('y', 22).text(v.label).attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)');
+    });
+    if (opts.band && opts.band.length > 1) {
+      svg.append('path').datum(opts.band).attr('fill', opts.band.color).attr('opacity', 0.14)
+        .attr('d', d3.area().x((p) => x(toDate(p.ym))).y0((p) => y(p.lo)).y1((p) => y(p.hi)));
+    }
+    const consecutive = (a, b) => addM(a.ym, 1) === b.ym;
+    series.forEach((s) => {
+      const segs = []; let cur = [];
+      s.pts.forEach((p, i) => { if (i && !consecutive(s.pts[i - 1], p)) { segs.push(cur); cur = []; } cur.push(p); });
+      if (cur.length) segs.push(cur);
+      segs.forEach((seg) => {
+        if (seg.length > 1) svg.append('path').datum(seg).attr('fill', 'none').attr('stroke', s.color).attr('stroke-width', s.width ?? 2)
+          .attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-dasharray', s.dash || null)
+          .attr('d', d3.line().x((p) => x(toDate(p.ym))).y((p) => y(p.v)));
+      });
+      if (s.dots) svg.append('g').selectAll('circle').data(s.pts).join('circle')
+        .attr('cx', (p) => x(toDate(p.ym))).attr('cy', (p) => y(p.v)).attr('r', s.r || 3).attr('fill', s.color);
+    });
+    if (opts.endLabels) {
+      const ends = series.filter((s) => s.pts.length).map((s) => { const p = s.pts[s.pts.length - 1]; return { s, p, y: y(p.v) }; }).sort((a, b) => a.y - b.y);
+      for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+      ends.forEach((e) => svg.append('text').attr('x', x(toDate(e.p.ym)) + 6).attr('y', e.y + 4).attr('fill', e.s.color)
+        .style('font-size', 'var(--cds-font-size-caption)').text(`${e.s.short || e.s.name} ${f1(e.p.v)}`));
+    }
+    const tip = tipBox(host);
+    const rule = svg.append('line').attr('y1', 12).attr('y2', H - 28).attr('stroke', 'var(--cds-chart-axis)').style('display', 'none');
+    const monthsAll = [...new Set(all.map((p) => p.ym))].sort();
+    svg.append('rect').attr('x', ml).attr('y', 0).attr('width', Math.max(0, W - mr - ml)).attr('height', H - 28).attr('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [mx, my] = d3.pointer(ev);
+        const t = x.invert(mx).getTime();
+        const ym = monthsAll.reduce((a, b) => (Math.abs(toDate(b) - t) < Math.abs(toDate(a) - t) ? b : a));
+        let partial = false;
+        const rows = series.map((s) => {
+          const p = s.pts.find((q) => q.ym === ym);
+          if (!p) return null;
+          const star = p.kind && !/rata-rata bulanan|monthly avg/.test(p.kind);
+          if (star) partial = true;
+          return { color: s.color, name: s.name, text: usd(p.v) + (star ? ' *' : '') + (p.vol ? ` · ${int(p.vol)} t` : '') };
+        }).filter(Boolean);
+        rule.style('display', null).attr('x1', x(toDate(ym))).attr('x2', x(toDate(ym)));
+        const scale = host.clientWidth / W;
+        showTip(host, tip, x(toDate(ym)) * scale, my * scale, monName(ym) + (partial ? ' (* ICI mingguan/parsial)' : ''), rows);
+      })
+      .on('pointerleave', () => { tip.style.display = 'none'; rule.style('display', 'none'); });
+  };
+
+  /* ---------- draw: trend ---------- */
+  const drawTrend = () => {
+    const hm = dash.data('hba_monthly');
+    const byId = buildSeries();
+    if (hm.status === 'ok') {
+      months = hm.data.map((r) => r.ym);
+      const opts = months.map((m) => ({ id: m, label: mmyy(m) }));
+      const p = dash.params();
+      const from = p.from || months[0], to = p.to || months[months.length - 1];
+      if (fromSel.options.length !== opts.length) { fillSel(fromSel, opts, from); fillSel(toSel, opts, to); }
+      if (document.activeElement !== fromSel) fromSel.value = from;
+      if (document.activeElement !== toSel) toSel.value = to;
+    }
+    const from = fromSel.value || '2023-01', to = toSel.value || '9999-12';
+    const host = document.getElementById('trend-chart');
+    if (hm.status === 'error' || hm.status === 'connect') { failBox(host); return; }
+    if (hm.status !== 'ok') return;
+    const series = SERIES.filter((s) => state.on[s.id] && byId[s.id] && byId[s.id].length).map((s) => ({
+      name: s.label, short: s.label.replace(' GAR', ''), color: s.color, dash: s.dash || null,
+      pts: byId[s.id].filter((p) => p.ym >= from && p.ym <= to),
+      dots: s.act || s.ds === 'ici_monthly', r: s.act ? 4 : 2.5, width: s.act ? 2.5 : 2,
+    }));
+    lineChart(host, series, { height: 400, endLabels: host.clientWidth > 600, vlines: [{ ym: '2023-09', label: 'Formula 4 kategori' }] });
+
+    /* KPI */
+    const k = dash.data('kpi');
+    if (k.status === 'ok') {
+      ['hba', 'hba1'].forEach((m) => {
+        const r = k.data.find((x) => x.metric === m);
+        const el = document.getElementById('k-' + m); el.classList.remove('dash-skeleton');
+        el.textContent = usd(r.latest);
+        setChg(document.getElementById('k-' + m + '-c'), r.change, `vs bln sebelumnya · ${monName(r.ym)}`);
+      });
+    }
+    const lastOf = (arr) => arr[arr.length - 1], prevOf = (arr) => arr[arr.length - 2];
+    const tile = (id, ds, col, list) => {
+      const el = document.getElementById(id); el.classList.remove('dash-skeleton');
+      if (!list.length) { el.textContent = '—'; return; }
+      const a = lastOf(list), b = prevOf(list);
+      el.dataset.where = 'ym=' + encodeURIComponent(a.ym);
+      el.textContent = usd(a.v);
+      const c = document.getElementById(id + '-c');
+      if (b && addM(b.ym, 1) === a.ym) setChg(c, a.v / b.v - 1, `vs bln sebelumnya · ${monName(a.ym)}`);
+      else { c.className = 'chg cx-flat'; c.textContent = `${monName(a.ym)}${a.kind ? ' · ' + a.kind : ''}`; }
+    };
+    tile('k-ici', 'ici_monthly', 'ici2', byId.ici2 || []);
+    tile('k-hpb', 'hpb_monthly', 'hpb5800', byId.hpb58 || []);
+    const a58 = byId.act58 || [];
+    const ka = document.getElementById('k-act'), kac = document.getElementById('k-act-c');
+    if (a58.length) {
+      const a = lastOf(a58);
+      ka.textContent = usd(a.v);
+      const b = (byId.ici2 || []).find((p) => p.ym === a.ym);
+      kac.className = 'chg cx-flat';
+      kac.textContent = `${monName(a.ym)} · ${a.vol ? int(a.vol) + ' t' : ''}${b ? ` · ${sgn(a.v - b.v)} vs ICI 2` : ''}`;
+    } else { ka.textContent = '—'; kac.className = 'chg cx-flat'; kac.textContent = STANDALONE ? 'Impor CSV harga aktual di bawah' : 'Belum ada data'; }
+    const ks = document.getElementById('k-spr'), ksc = document.getElementById('k-spr-c');
+    const spr = (ref) => { const d = actualRows().filter((a) => a.series === 'act58' && a[ref] != null && (a.selling_price ?? a.price) != null).map((a) => ({ d: (a.selling_price ?? a.price) - a[ref], ym: a.ym })); return d.length ? { n: d.length, avg: d3.mean(d, (x) => x.d), from: d[0].ym, to: d[d.length - 1].ym } : null; };
+    const s1 = spr('ici_ref'), s2 = spr('hpb_ref');
+    if (state.extra.length) ks.removeAttribute('data-source'); else ks.setAttribute('data-source', 'spread_summary');
+    if (s1) {
+      ks.textContent = (s1.avg >= 0 ? '+' : '−') + 'US$' + f2(Math.abs(s1.avg));
+      ksc.className = 'chg cx-flat';
+      ksc.textContent = `${s1.n} bln penjualan (${mmyy(s1.from)}–${mmyy(s1.to)}), metode Monthly Price Analysis${s2 ? ` · vs HPB 5.800: ${s2.avg >= 0 ? '+' : '−'}${f2(Math.abs(s2.avg))}` : ''}`;
+    } else { ks.textContent = '—'; ksc.className = 'chg cx-flat'; ksc.textContent = 'Belum ada data acuan penjualan'; }
+
+    /* actual table + csv */
+    const act = actualRows();
+    const tb = document.querySelector('#act-table tbody');
+    tb.replaceChildren(...act.slice().reverse().map((r) => {
+      const tr = document.createElement('tr');
+      [mmyy(r.ym), byIdMeta[r.series].label.replace('Aktual ', ''), f2(r.price), r.volume_t != null && !isNaN(r.volume_t) ? int(r.volume_t) : '', r.gar != null && !isNaN(r.gar) ? int(r.gar) : '', r.src === 'file' ? 'File perusahaan' : 'Tambahan'].forEach((v, i) => {
+        const td = document.createElement('td'); if (i >= 2 && i <= 4) td.className = 'n'; td.textContent = v; tr.append(td); });
+      return tr;
+    }));
+    document.getElementById('out-csv').value = ['ym,price,volume_t,gar,grade,selling_price,ici_ref,hpb_ref'].concat(act.map((r) => [r.ym, r.price, r.volume_t ?? '', r.gar ?? '', r.series === 'act64' ? 6400 : 5800, r.selling_price ?? '', r.ici_ref ?? '', r.hpb_ref ?? ''].join(','))).join('\n');
+
+    /* compare */
+    const bench = byId[state.cmp] || [], actS = byId[state.cmpAct] || [];
+    const refKey = state.cmp === 'ici2' ? 'ici_ref' : state.cmp === 'hpb58' ? 'hpb_ref' : null;
+    const useSell = state.basis === 'sell';
+    const pairs = actS.filter((a) => a.ym >= from && a.ym <= to).map((a) => {
+      const price = useSell ? a.sell : a.v;
+      if (refKey && a[refKey] != null) return { ym: a.ym, a: price, vol: a.vol, b: a[refKey], src: 'Acuan perusahaan' };
+      const b = bench.find((p) => p.ym === a.ym);
+      return { ym: a.ym, a: price, vol: a.vol, b: b ? b.v : null, src: b ? (b.kind && !/rata-rata bulanan|monthly avg/.test(b.kind) ? 'Seri historis (mingguan/parsial)' : 'Seri historis') : '' };
+    });
+    const cmpHost = document.getElementById('cmp-chart');
+    const bMeta = byIdMeta[state.cmp], aMeta = byIdMeta[state.cmpAct];
+    const priceLbl = useSell ? 'Selling price' : 'Harga aktual';
+    lineChart(cmpHost, [
+      { name: bMeta.label + ' (seri historis)', color: bMeta.color, pts: bench.filter((p) => p.ym >= from && p.ym <= to), dash: bMeta.dash, dots: bMeta.ds === 'ici_monthly', r: 2 },
+      ...(refKey ? [{ name: bMeta.label + ' acuan perusahaan', color: bMeta.color, pts: pairs.filter((p) => p.src === 'Acuan perusahaan').map((p) => ({ ym: p.ym, v: p.b })), dots: true, r: 4.5, width: 0 }] : []),
+      { name: `${priceLbl} ${aMeta.label.replace('Aktual ', '')}`, color: 'var(--color-fg)', pts: pairs.map((p) => ({ ym: p.ym, v: p.a, vol: p.vol })), dots: true, width: 2.5, r: 4 },
+    ], { height: 260, endLabels: false, empty: 'Belum ada data pada rentang ini.' });
+    const ct = document.querySelector('#cmp-table tbody');
+    ct.replaceChildren(...pairs.slice().reverse().map((p) => {
+      const tr = document.createElement('tr');
+      const cells = [mmyy(p.ym), p.vol ? int(p.vol) : '', f2(p.a), p.b == null ? '—' : f2(p.b), p.b == null ? '—' : sgn(p.a - p.b), p.b == null ? '—' : pct0(p.a / p.b), p.src];
+      cells.forEach((v, i) => { const td = document.createElement('td'); if (i && i < 6) td.className = 'n'; td.textContent = v;
+        if (i === 4 && p.b != null) td.className = 'n ' + (p.a >= p.b ? 'cx-up' : 'cx-down'); tr.append(td); });
+      return tr;
+    }));
+    const ok = pairs.filter((p) => p.b != null);
+    const vol = d3.sum(ok, (p) => p.vol || 0);
+    document.getElementById('cmp-sum').textContent = ok.length
+      ? `${ok.length} bulan penjualan: rata-rata ${priceLbl.toLowerCase()} ${usd(d3.mean(ok, (p) => p.a))} vs ${bMeta.label} ${usd(d3.mean(ok, (p) => p.b))}, selisih ${sgn(d3.mean(ok, (p) => p.a - p.b))} USD/t (rasio ${pct0(d3.mean(ok, (p) => p.a / p.b))})${vol ? `; tertimbang volume ${int(vol)} t: ${sgn(d3.sum(ok, (p) => (p.a - p.b) * (p.vol || 0)) / vol)} USD/t` : ''}.`
+      : actS.length ? 'Tidak ada bulan penjualan yang punya nilai benchmark terpilih pada rentang ini.' : 'Belum ada data harga aktual.';
+  };
+
+  /* ---------- draw: simulation ---------- */
+  const drawSim = () => {
+    if (state.page !== 'sim') return;
+    const hm = dash.data('hba_monthly'), fw = dash.data('nc_forward'), fa = dash.data('sim_factors'), mp = dash.data('model_params');
+    const sp = dash.data('sim_preset'), ss = dash.data('sim_summary'), bt = dash.data('backtest');
+    const fan = document.getElementById('fan-chart');
+    if ([hm, fw, fa, mp, sp].some((d) => d.status === 'error' || d.status === 'connect')) { failBox(fan); return; }
+    if ([hm, fw, fa, mp, sp].some((d) => d.status !== 'ok')) return;
+    buildSliders(fa.data, false);
+    const byId = buildSeries();
+    const simIds = [...new Set(sp.data.map((r) => r.series))];
+    const actIds = ['act58', 'act64'].filter((id) => (byId[id] || []).length);
+    const opts = simIds.concat(actIds).map((id) => ({ id, label: byIdMeta[id].label }));
+    if (simSel.options.length !== opts.length) fillSel(simSel, opts, state.simSeries);
+    if (!opts.some((o) => o.id === state.simSeries)) state.simSeries = 'hba';
+    simSel.value = state.simSeries;
+    const isAct = state.simSeries.startsWith('act');
+    document.getElementById('sim-bench-wrap').hidden = !isAct;
+    if (isAct) {
+      fillSel(simBench, simIds.map((id) => ({ id, label: byIdMeta[id].label })), null);
+      if (!simIds.includes(state.simBench[state.simSeries])) state.simBench[state.simSeries] = simIds.includes('hpb58') ? 'hpb58' : 'hba1';
+      simBench.value = state.simBench[state.simSeries];
+    }
+    const base = isAct ? state.simBench[state.simSeries] : state.simSeries;
+    const meta = byIdMeta[base];
+    const par = (k) => (mp.data.find((r) => r.param === k) || {}).value;
+    const startKey = base === 'hpb58' ? 'model_start_hpb' : base.startsWith('ici') ? 'model_start_ici' : 'model_start';
+    const hist = (byId[base] || []).filter((p) => p.ym >= par(startKey));
+    let ratio = 1, ratioN = 0;
+    const noteEl = document.getElementById('act-sim-note');
+    if (isAct) {
+      const ov = (byId[state.simSeries] || []).map((a) => { const b = byId[base].find((p) => p.ym === a.ym); return b ? a.v / b.v : null; }).filter((v) => v != null).slice(-6);
+      ratioN = ov.length; ratio = ov.length ? d3.mean(ov) : NaN;
+      if (!ratioN) {
+        fan.replaceChildren(); fan.classList.remove('dash-skeleton');
+        const p = document.createElement('p'); p.className = 'cx-note'; p.textContent = 'Tidak ada bulan penjualan yang juga punya nilai benchmark terpilih. Pilih benchmark lain.'; fan.append(p);
+        ['bear', 'base', 'bull', 'cus'].forEach((s) => { document.getElementById('s-' + s).textContent = '—'; document.getElementById('s-' + s + '-c').textContent = ''; });
+        noteEl.textContent = ''; return;
+      }
+    }
+    const custom = window.engine(hist.map((p) => ({ ym: p.ym, v: p.v })), fw.data.map((r) => ({ ym: r.ym, ncf: num(r.ncf) })), fa.data, state.shocks, mp.data, 12);
+    const preset = (sc) => sp.data.filter((r) => r.series === base && r.scenario === sc).sort((a, b) => a.k - b.k);
+    const actHist = isAct ? byId[state.simSeries] : null;
+    const lastV = isAct ? actHist[actHist.length - 1].v : custom.lastV;
+    const lastLbl = isAct ? `penjualan terakhir (${monName(actHist[actHist.length - 1].ym)})` : 'terakhir';
+    const h = state.h;
+    const lbl = monName(addM(custom.lastYm, h));
+    const tiles = { bear: preset('bearish'), base: preset('base'), bull: preset('bullish'), cus: custom.path };
+    Object.entries(tiles).forEach(([key, path]) => {
+      const p = path[h - 1];
+      const v = p.value * ratio;
+      document.getElementById('s-' + key).textContent = usd(v);
+      setChg(document.getElementById('s-' + key + '-c'), v / lastV - 1, `vs ${lastLbl} · ${lbl}`);
+    });
+    [['bear', 'bearish'], ['base', 'base'], ['bull', 'bullish']].forEach(([k, s]) => { document.getElementById(`s-${k}-lab`).textContent = `${SCN[s]} · bulan ke-${h}`; });
+    document.getElementById('s-cus-lab').textContent = `Kustom (pengaturan Anda) · bulan ke-${h}`;
+    const sh = fa.data.reduce((s, f) => s + Number(f.elasticity) * Number(state.shocks[f.factor] || 0), 0);
+    document.getElementById('impact-note').textContent = `Dampak faktor kustom saat efek penuh: ${pct(sh / 100)} terhadap jalur statistik + kurva forward.`;
+
+    /* fan chart */
+    const seriesLabel = isAct ? byIdMeta[state.simSeries].label : meta.label;
+    const histPts = isAct ? actHist.filter((p) => p.ym >= addM(custom.lastYm, -36)) : hist.slice(-24);
+    const join = (path) => [{ ym: custom.lastYm, v: custom.lastV * ratio }]
+      .concat(path.slice(0, h).map((p) => ({ ym: p.ym, v: p.value * ratio, lo: p.lo * ratio, hi: p.hi * ratio })));
+    const bandPts = join(preset('base')).map((p, i) => (i ? p : { ...p, lo: p.v, hi: p.v }));
+    bandPts.color = C[0];
+    const lines = [
+      { name: seriesLabel + ' (riwayat)', short: 'Riwayat', color: 'var(--color-fg)', pts: histPts, dots: isAct, r: 3.5 },
+    ];
+    if (isAct) lines.push({ name: meta.label + ` × ${pct0(ratio)}`, short: 'Acuan×rasio', color: 'var(--cds-chart-muted)', pts: hist.slice(-36).map((p) => ({ ym: p.ym, v: p.v * ratio })), dash: '3 3' });
+    lines.push(
+      { name: 'Bearish', short: 'Bearish', color: 'var(--cds-chart-status-critical)', pts: join(preset('bearish')), dash: '5 4' },
+      { name: 'Base', short: 'Base', color: C[0], pts: join(preset('base')) },
+      { name: 'Bullish', short: 'Bullish', color: C[2], pts: join(preset('bullish')), dash: '5 4' },
+      { name: 'Kustom', short: 'Kustom', color: C[4], pts: join(custom.path), dash: '2 3' },
+    );
+    lineChart(fan, lines, { height: 380, endLabels: fan.clientWidth > 520, band: bandPts, vlines: [{ ym: custom.lastYm, label: 'Cut-off' }] });
+    document.getElementById('fan-note').textContent = isAct
+      ? `${seriesLabel}: titik = bulan penjualan; proyeksi ${h} bulan mengikuti ${meta.label} × rasio ${pct0(ratio)} (cut-off ${monName(custom.lastYm)}), pita 80% di sekitar Base.`
+      : `${seriesLabel}: riwayat 24 bulan, proyeksi ${h} bulan dari data terakhir ${monName(custom.lastYm)}, pita 80% di sekitar Base.`;
+
+    /* summary table */
+    const st = document.getElementById('sum-table'), tb = st.querySelector('tbody');
+    if (ss.status === 'ok') {
+      const rows = ss.data.filter((r) => r.series === base);
+      tb.replaceChildren(...rows.map((r) => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.key;
+        [SCN[r.scenario], r.m3, r.m6, r.m12, r.lo12, r.hi12].forEach((v, i) => {
+          const td = document.createElement('td'); if (i) td.className = 'n';
+          td.textContent = i ? f2(v * ratio) : v; tr.append(td); });
+        return tr;
+      }));
+      if (isAct) st.removeAttribute('data-source'); else st.setAttribute('data-source', 'sim_summary');
+    }
+    document.getElementById('sum-note').textContent = `${seriesLabel}, USD/ton. Bulan ke-3/6/12 dihitung dari ${monName(custom.lastYm)}. Rentang = pita 80% bulan ke-12.`;
+    noteEl.textContent = isAct ? `Harga aktual = jalur ${meta.label} × rasio ${pct0(ratio)} (rata-rata aktual/benchmark ${ratioN} bulan penjualan terakhir yang tumpang-tindih).` : '';
+
+    /* backtest table */
+    if (bt.status === 'ok') {
+      const rows = bt.data.filter((r) => r.series === base);
+      const names = { naive: 'Naive (baseline)', ar1: 'AR(1) log', ma12: 'Rata-rata 12 bln' };
+      const best = {};
+      [3, 6, 12].forEach((hh) => { const c = rows.filter((r) => r.h === hh); if (c.length) best[hh] = c.reduce((a, b) => (b.rmse < a.rmse ? b : a)).model; });
+      document.querySelector('#bt-table tbody').replaceChildren(...rows.map((r) => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.key;
+        [names[r.model], int(r.h), int(r.n), f2(r.mae), f2(r.rmse), r.dir == null ? '—' : f1(r.dir) + '%', pct0(r.weight)].forEach((v, i) => {
+          const td = document.createElement('td'); if (i) td.className = 'n'; td.textContent = v;
+          if (i === 4 && best[r.h] === r.model) td.style.fontWeight = 'var(--cds-font-weight-medium)';
+          tr.append(td); });
+        return tr;
+      }));
+      if (rows.length) document.getElementById('bt-note').textContent = `${meta.label}: error out-of-sample (USD/t) sejak ${monName(rows[0].start)}; RMSE terbaik per horizon ditebalkan. Sampel uji kecil (n ${int(d3.min(rows, (r) => r.n))}–${int(d3.max(rows, (r) => r.n))}), jadi bedanya tipis. Volatilitas bulanan ${f1(rows[0].sigma * 100)}%.`;
+    }
+  };
+
+  /* ---------- draw: data tables ---------- */
+  const fillTable = (id, ds, cols, fmt, keyCol) => {
+    const d = dash.data(ds), tb = document.querySelector(`#${id} tbody`);
+    if (d.status !== 'ok') return d.status;
+    tb.replaceChildren(...d.data.map((r) => {
+      const tr = document.createElement('tr');
+      if (keyCol) tr.dataset.key = r[keyCol];
+      cols.forEach((c) => { const td = document.createElement('td'); const v = r[c];
+        if (fmt[c]) { td.className = 'n'; td.textContent = v == null || v === '' ? '' : fmt[c](Number(v)); } else td.textContent = v == null ? '' : String(v);
+        tr.append(td); });
+      return tr;
+    }));
+    return d.data.length;
+  };
+  const drawData = () => {
+    fillTable('notes-table', 'data_notes', ['topic', 'detail', 'status'], {}, 'key');
+    const nShip = fillTable('ship-table', 'shipments', ['bl_date', 'pricing_month', 'vessel', 'entity', 'destination', 'gar', 'selling_price', 'actual_price', 'volume_t'], { gar: int, selling_price: f2, actual_price: f2, volume_t: int }, 'key');
+    document.getElementById('ship-card').hidden = nShip === 0;
+    fillTable('per-table', 'hba_periods', ['label', 'hba', 'hba1', 'hba2', 'hba3', 'src'], { hba: f2, hba1: f2, hba2: f2, hba3: f2 });
+    fillTable('ici-table', 'ici_monthly', ['ym', 'ici1', 'ici2', 'ici3', 'ici4', 'ici5', 'kind', 'src'], { ici1: f2, ici2: f2, ici3: f2, ici4: f2, ici5: f2 });
+    fillTable('hpb-table', 'hpb_monthly', ['ym', 'hpb5800', 'hpb6500', 'src'], { hpb5800: f2, hpb6500: f2 });
+    fillTable('ctx-table', 'market_context', ['item', 'value', 'unit', 'date', 'source'], { value: (v) => loc.format(',.2~f')(v) });
+  };
+  const drawFactors = () => {
+    const d = dash.data('sim_factors');
+    if (d.status !== 'ok') return;
+    document.querySelector('#fac-table tbody').replaceChildren(...d.data.map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.factor;
+      ['label', 'group', 'link', 'elasticity', 'lag_m', 'bearish', 'base', 'bullish', 'basis', 'source'].forEach((c) => {
+        const td = document.createElement('td');
+        if (['elasticity', 'lag_m', 'bearish', 'base', 'bullish'].includes(c)) { td.className = 'n'; const v = Number(r[c]);
+          td.textContent = c === 'elasticity' ? loc.format('+.2f')(v) : c === 'lag_m' ? int(v) : (v > 0 ? '+' : '') + int(v) + '%'; }
+        else td.textContent = r[c];
+        tr.append(td); });
+      return tr;
+    }));
+  };
+
+  /* ---------- takeaway ---------- */
+  const drawTake = () => {
+    const k = dash.data('kpi'), ss = dash.data('sim_summary'), sp = dash.data('spread_summary'), el = document.getElementById('takeaway');
+    if (k.status !== 'ok') return;
+    const r = k.data.find((x) => x.metric === 'hba');
+    let t = `HBA ${monName(r.ym)} ${usd(r.latest)}/t (${pct(r.change)} dari bulan sebelumnya).`;
+    const s1 = sp.status === 'ok' ? sp.data.find((x) => x.metric === 'ici2') : null;
+    if (s1 && s1.n) t += ` Selling price GAR ~5.800 rata-rata ${s1.avg >= 0 ? 'di atas' : 'di bawah'} ICI 2 sebesar US$${f2(Math.abs(s1.avg))}/t (${s1.n} bulan penjualan ${mmyy(s1.from)}–${mmyy(s1.to)}).`;
+    if (ss.status === 'ok') {
+      const b = ss.data.find((x) => x.series === 'hba' && x.scenario === 'base');
+      if (b) t += ` Skenario dasar HBA 12 bulan: ${usd(b.m12)}/t (rentang 80% ${usd(b.lo12)}–${usd(b.hi12)}).`;
+    }
+    el.classList.remove('dash-skeleton'); el.textContent = t;
+  };
+
+  const draw = () => {
+    drawTake();
+    if (state.page === 'trend') drawTrend();
+    if (state.page === 'sim') { drawSim(); drawFactors(); }
+    if (state.page === 'data') drawData();
+  };
+  dash.onData(draw);
+  const named = location.hash.slice(1);
+  if (['trend', 'sim', 'data'].includes(named)) showPage(named);
+})();
+</script>
+
+</div>
+
+<footer class="cx-foot">
+  Data HBA per Periode I Oktober 2026 (Kepmen ESDM 384.K/MB.01/MEM.B/2026); konteks pasar per 12 Oktober 2026. Sumber tiap angka ada di tab <i>Data &amp; sumber</i>.
+  Simulasi adalah alat bantu perencanaan berbasis asumsi yang dinyatakan, bukan prediksi pasti atau saran investasi.
+</footer>
+</body>
+</html>
