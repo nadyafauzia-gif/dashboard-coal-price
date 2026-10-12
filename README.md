@@ -1,13 +1,13 @@
 [README.md](https://github.com/user-attachments/files/33319861/README.md)
 # Dashboard Harga Batubara
 
-Dashboard web untuk memantau tren **HBA** (Harga Batubara Acuan, Kementerian ESDM) dan **ICI** (Argus/Coalindo) periode 2023–2026, membandingkannya dengan harga jual aktual perusahaan, serta menyimulasikan harga 3, 6, dan 12 bulan ke depan.
+Dashboard web untuk memantau tren **HBA** (Harga Batubara Acuan, Kementerian ESDM), **HPB** 5.800/6.500 GAR, dan **ICI** (Argus/Coalindo) periode 2023–2026, membandingkannya dengan harga jual aktual perusahaan, serta menyimulasikan harga 3, 6, dan 12 bulan ke depan.
 
 Semuanya ada dalam satu file `index.html`, tanpa server dan tanpa database.
 
 ## Fitur
 
-- **Tren & perbandingan**: filter *Time from / Time to (mm/yy)*, pilih seri HBA, HBA I–III, dan ICI 1–5, input harga aktual (manual, tempel CSV, atau unggah file CSV), serta tabel selisih dan rasio terhadap benchmark.
+- **Tren & perbandingan**: filter *Time from / Time to (mm/yy)*, pilih seri HBA, HBA I–III, HPB, dan ICI 1–5, harga aktual per kelas kalori (GAR ~5.800 / ~6.400) dari file CSV internal, serta tabel selisih dan rasio terhadap benchmark.
 - **Price simulation**: skenario Bearish / Base / Bullish, slider faktor penentu (impor China dan India, pasokan Indonesia, LNG JKM, freight, cuaca), pita ketidakpastian 80%, dan tabel validasi model (backtest).
 - **Data & sumber**: tabel HBA per periode Kepmen, ICI yang tersedia publik, dan indikator konteks pasar beserta sumbernya.
 
@@ -16,7 +16,9 @@ Semuanya ada dalam satu file `index.html`, tanpa server dan tanpa database.
 Harga jual aktual yang dimasukkan **hanya disimpan di browser perangkat masing-masing** (localStorage). Data itu tidak dikirim ke server, tidak masuk ke repository ini, dan tidak terlihat oleh pengguna lain.
 
 - **Jangan** menambahkan data penjualan perusahaan ke repository ini, karena repository-nya publik.
-- Untuk memindahkan data ke perangkat lain, gunakan **Ekspor CSV → Unduh CSV**, lalu **Pilih file CSV…** di perangkat tujuan.
+- Untuk memuat data penjualan, buka tab *Tren & perbandingan* → **Impor banyak baris (CSV)** → **Pilih file CSV…**, lalu pilih file `harga_aktual_perusahaan.csv` yang dibagikan secara internal (email/drive kantor). Cukup sekali per browser.
+- Format CSV: `ym,price,volume_t,gar,grade` (contoh `2026-05,98.6,93517,5805,5800`).
+- Data ICI berlangganan (Argus/Coalindo) juga **tidak** dipublikasikan di sini; situs hanya memuat ICI yang tersedia publik.
 
 ## Memperbarui data HBA
 
