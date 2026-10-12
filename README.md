@@ -6,18 +6,18 @@ Semuanya ada dalam satu file `index.html`, tanpa server dan tanpa database.
 
 ## Fitur
 
-- **Tren & perbandingan**: filter *Time from / Time to (mm/yy)*, pilih seri HBA, HBA I–III, HPB, dan ICI 1–5, harga aktual per kelas kalori (GAR ~5.800 / ~6.400) dari file CSV internal, serta tabel selisih dan rasio terhadap benchmark.
+- **Tren & perbandingan**: filter *Time from / Time to (mm/yy)*, pilih seri HBA, HBA I–III, HPB, dan ICI 1–5, input harga jual aktual perusahaan (manual atau tempel/impor CSV), serta tabel selisih dan rasio terhadap benchmark.
 - **Price simulation**: skenario Bearish / Base / Bullish, slider faktor penentu (impor China dan India, pasokan Indonesia, LNG JKM, freight, cuaca), pita ketidakpastian 80%, dan tabel validasi model (backtest).
-- **Data & sumber**: tabel HBA per periode Kepmen, ICI (ICI 1–2 dari sheet Historical Market Index perusahaan), HPB, dan indikator konteks pasar beserta sumbernya.
+- **Data & sumber**: tabel HBA per periode Kepmen, ICI dari sumber yang sudah dipublikasikan terbuka, HPB, dan indikator konteks pasar beserta sumbernya.
 
 ## Privasi data perusahaan
 
 Harga jual aktual yang dimasukkan **hanya disimpan di browser perangkat masing-masing** (localStorage). Data itu tidak dikirim ke server, tidak masuk ke repository ini, dan tidak terlihat oleh pengguna lain.
 
 - **Jangan** menambahkan data penjualan perusahaan ke repository ini, karena repository-nya publik.
-- Untuk memuat data penjualan, buka tab *Tren & perbandingan* → **Impor banyak baris (CSV)** → **Pilih file CSV…**, lalu pilih file `harga_aktual_perusahaan.csv` yang dibagikan secara internal (email/drive kantor). Cukup sekali per browser.
-- Format CSV: `ym,price,volume_t,gar,grade,selling_price,ici_ref,hpb_ref` (contoh `2026-06,98.61,93517,5805,5800,98.53,107.13,105.94`).
-- ICI 1–2 Apr 2024–Sep 2026 berasal dari data berlangganan Argus/Coalindo milik perusahaan dan hanya untuk penggunaan internal.
+- Isi harga lewat kartu **Input harga jual aktual perusahaan** di tab *Tren & perbandingan* (bulan mm/yy, harga, volume, GAR), atau tempel/impor banyak baris sekaligus dalam format `mm/yy,harga,volume,gar`.
+- Gunakan **Ekspor CSV** untuk cadangan atau memindahkan data ke perangkat lain.
+- Data ICI di situs ini hanya berasal dari sumber yang sudah dipublikasikan terbuka (lihat kolom Sumber di tab *Data & sumber*); data ICI berlangganan tidak dimuat.
 
 ## Memperbarui data HBA
 
