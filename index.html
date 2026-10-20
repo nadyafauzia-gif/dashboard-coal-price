@@ -82,7 +82,7 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
 /* controls */
 .cx-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 18px; }
 .cx-field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--color-fg-muted); }
-.cx select, .cx input[type="text"], .cx input[type="number"], .cx textarea {
+.cx select, .cx input[type="text"], .cx input[type="number"], .cx input[type="date"], .cx textarea {
   font: inherit; font-size: 14px; color: var(--color-fg); background: var(--cx-surface);
   border: 1px solid var(--cx-line); border-radius: var(--cx-r-md); padding: 8px 11px; min-height: 38px; box-sizing: border-box; }
 .cx select { padding-right: 28px; }
@@ -169,6 +169,82 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
   .cx-bar .cx-btn { padding: 6px 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .cx * { transition: none !important; } }
+#hc-steps, #ry-steps { width: 100%; }
+#hc-steps td, #ry-steps td { white-space: normal; overflow-wrap: anywhere; }
+#hc-steps td.n, #ry-steps td.n { white-space: nowrap; }
+
+/* tab labels: long on desktop, short on phone */
+.cx-ts { display: none; }
+/* folds */
+.cx-fold { border-top: 1px solid var(--cx-line); margin-top: 12px; }
+.cx-fold > summary { cursor: pointer; font-size: 13px; font-weight: 500; padding: 11px 0; color: var(--color-fg); list-style: none; display: flex; align-items: center; gap: 8px; }
+.cx-fold > summary::-webkit-details-marker, .cx-fold-card > summary::-webkit-details-marker { display: none; }
+.cx-fold > summary::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform .15s; margin-right: 2px; }
+.cx-fold[open] > summary::before { transform: rotate(45deg); }
+.cx-fold-card { margin-top: 16px; }
+.cx-fold-card > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cx-fold-card > summary h2 { margin: 0; }
+.cx-fold-card > summary::after { content: "+"; font-size: 20px; line-height: 1; color: var(--color-fg-muted); }
+.cx-fold-card[open] > summary::after { content: "−"; }
+.cx-fold-card[open] > summary { margin-bottom: 8px; }
+/* segmented control */
+.cx-seg { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--cx-line); border-radius: var(--cx-r-sm); background: var(--color-bg); }
+.cx-seg button { font: inherit; font-size: 13px; font-weight: 500; border: 0; background: none; color: var(--color-fg-muted); padding: 7px 16px; border-radius: var(--cx-r-sm); cursor: pointer; min-width: 7.5rem; }
+.cx-seg button[aria-pressed="true"] { background: var(--cx-surface); color: var(--color-fg); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--cx-line); }
+/* royalty tab */
+.ry-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 16px; align-items: start; margin-bottom: 16px; }
+.ry-t { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); margin: 18px 0 8px; }
+.ry-form .cx-note:first-of-type { margin-bottom: 4px; }
+.ry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: 10px; }
+.ry-grid input, .ry-grid select, .ry-hpb input { width: 100%; }
+.ry-wide { grid-column: 1 / -1; }
+.ry-hpb { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+.ry-hpb .cx-btn { min-height: 38px; }
+.ry-src { font-size: 12px; margin: 6px 0 0; }
+.ry-more { margin-top: 18px; }
+.ry-more .ry-grid { margin-bottom: 10px; }
+.ry-chip { font-size: 12px; font-weight: 400; color: var(--color-fg-muted); margin-left: auto; text-align: right; }
+.ry-res { position: sticky; top: 16px; background: color-mix(in srgb, var(--cx-accent) 5%, var(--cx-surface)); }
+.ry-lab { font-size: 12px; color: var(--color-fg-muted); }
+.ry-big { font-weight: 600; font-size: clamp(30px, 3.6vw, 40px); letter-spacing: -0.03em; line-height: 1.1; margin: 6px 0 4px; color: var(--cx-accent); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ry-res.is-empty .ry-big { color: var(--color-fg-muted); }
+.ry-sub { font-size: 12px; color: var(--color-fg-muted); line-height: 1.45; font-variant-numeric: tabular-nums; }
+.ry-mid { font-weight: 600; font-size: 20px; letter-spacing: -0.02em; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+.ry-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; border-top: 1px solid var(--cx-line); margin-top: 16px; padding-top: 14px; }
+.ry-cmp { display: grid; gap: 6px; margin: 8px 0 10px; }
+.ry-cr { font: inherit; display: grid; grid-template-columns: 6.2rem 3rem minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left;
+  padding: 8px 10px; border-radius: var(--cx-r-md); border: 1px solid transparent; background: none; color: var(--color-fg-muted); cursor: pointer; font-size: 13px; font-variant-numeric: tabular-nums; }
+.ry-cr[aria-pressed="true"] { background: var(--cx-surface); border-color: var(--cx-line); color: var(--color-fg); font-weight: 500; }
+.ry-bar { height: 6px; border-radius: 3px; background: var(--cx-line); overflow: hidden; }
+.ry-bar i { display: block; height: 100%; border-radius: 3px; background: var(--cds-chart-muted); }
+.ry-cr[aria-pressed="true"] .ry-bar i { background: var(--cx-accent); }
+.ry-cv { text-align: right; }
+.ry-res .cx-fold { margin-top: 6px; }
+#ry-save { background: var(--cx-accent); border-color: var(--cx-accent); color: #fff; width: 100%; min-height: 40px; }
+.ry-lhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ry-lbtn { display: flex; gap: 8px; }
+.ry-lbtn .cx-btn[hidden], .cx-tbl-wrap[hidden] { display: none; }
+.ry-sticky { display: none; }
+@media (max-width: 860px) {
+  .ry-layout { grid-template-columns: 1fr; }
+  .ry-res { position: static; }
+}
+@media (max-width: 640px) {
+  .cx-tl { display: none; } .cx-ts { display: inline; }
+  .ry-grid { grid-template-columns: 1fr 1fr; }
+  .cx-seg { display: flex; } .cx-seg button { flex: 1; min-width: 0; }
+  .ry-cr { grid-template-columns: 5.6rem 2.6rem minmax(0, 1fr) auto; gap: 8px; padding: 8px; font-size: 12px; }
+  .ry-sticky:not([hidden]) { display: flex; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 30; align-items: center; gap: 12px;
+    background: var(--color-fg); color: var(--color-bg); border-radius: 14px; padding: 10px 10px 10px 16px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .ry-sticky .ry-lab { color: inherit; opacity: .7; font-size: 11px; }
+  .ry-sv { font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .ry-sr { font-size: 12px; opacity: .8; margin-left: auto; text-align: right; }
+  .ry-sticky .cx-btn { background: var(--color-bg); color: var(--color-fg); border: 0; }
+  #roy { padding-bottom: 72px; }
+}
+.hc-grid { margin-bottom: 12px; }
+.hc-grid input, .hc-grid select { width: 100% !important; }
+#hc-regime { margin: 0 0 12px; }
 </style>
 
 <div class="cx">
@@ -182,8 +258,9 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
     <nav class="cx-tabs" role="tablist" aria-label="Halaman">
       <button class="cx-tab" role="tab" id="tab-trend" data-page="trend" aria-selected="true">Tren</button>
       <button class="cx-tab" role="tab" id="tab-sim" data-page="sim" aria-selected="false">Simulasi</button>
-      <button class="cx-tab" role="tab" id="tab-hpb" data-page="hpb" aria-selected="false">Kalkulator HPB</button>
-      <button class="cx-tab" role="tab" id="tab-data" data-page="data" aria-selected="false">Data &amp; sumber</button>
+      <button class="cx-tab" role="tab" id="tab-hpb" data-page="hpb" aria-selected="false"><span class="cx-tl">Kalkulator HPB</span><span class="cx-ts">HPB</span></button>
+      <button class="cx-tab" role="tab" id="tab-roy" data-page="roy" aria-selected="false">Royalti</button>
+      <button class="cx-tab" role="tab" id="tab-data" data-page="data" aria-selected="false"><span class="cx-tl">Data &amp; sumber</span><span class="cx-ts">Data</span></button>
     </nav>
     </div>
   </div>
@@ -362,16 +439,21 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
     <div class="cx-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));">
       <div class="cx-card" id="hpbcalc-card">
         <h2>Kalkulator Harga Patokan Batubara (HPB)</h2>
-        <p class="cx-note">Hitung HPB dari kualitas batubara dan HBA periode terpilih. Hasilnya bisa disimpan sebagai titik HPB di kurva tren.</p>
-        <div class="cx-row">
+        <p class="cx-note">Hitung HPB dari kualitas batubara dan HBA periode terpilih. Formula dipilih otomatis sesuai rezim regulasi periode HBA. Hasilnya bisa disimpan sebagai titik HPB di kurva tren dan dipakai untuk estimasi royalti.</p>
+        <div class="ry-grid hc-grid">
+          <label class="cx-field">Tanggal B/L (opsional)<input type="date" id="hc-bl" min="2023-01-01"></label>
           <label class="cx-field">Periode HBA<select id="hc-period"></select></label>
           <label class="cx-field">Simpan ke bulan (mm/yy)<input type="text" id="hc-ym" size="6" placeholder="10/26"></label>
         </div>
-        <div class="cx-row">
+        <p class="cx-note" id="hc-bl-msg"></p>
+        <p class="cx-note" id="hc-regime" style="font-weight: var(--cds-font-weight-medium)"></p>
+        <div class="ry-grid hc-grid">
           <label class="cx-field">Nilai kalor GAR (kcal/kg)<input type="number" id="hc-cv" value="5800" step="10" min="1000" style="width:8rem"></label>
           <label class="cx-field">Total moisture ar (%)<input type="number" id="hc-tm" step="0.01" min="0" max="70" style="width:7rem"></label>
-          <label class="cx-field">Total sulphur ar (%)<input type="number" id="hc-ts" step="0.01" min="0" max="10" style="width:7rem"></label>
-          <label class="cx-field">Ash ar (%)<input type="number" id="hc-ash" step="0.01" min="0" max="60" style="width:7rem"></label>
+          <label class="cx-field">Total sulphur (%)<input type="number" id="hc-ts" step="0.01" min="0" max="10" style="width:7rem"></label>
+          <label class="cx-field">Ash (%)<input type="number" id="hc-ash" step="0.01" min="0" max="60" style="width:7rem"></label>
+          <label class="cx-field">Basis TS &amp; Ash<select id="hc-basis"><option value="ar">ar (as received)</option><option value="adb">adb (air dried) + IM</option></select></label>
+          <label class="cx-field" id="hc-im-wrap" hidden>Inherent moisture adb (%)<input type="number" id="hc-im" step="0.01" min="0" max="40" style="width:7rem"></label>
         </div>
         <label class="cx-note" style="display:flex; gap:6px; align-items:center; margin-bottom: var(--cds-gap-sm)"><input type="checkbox" id="hc-corr"> Terapkan koreksi kualitas (TM, TS, Ash) terhadap spesifikasi acuan HBA</label>
         <details id="hc-coef-box" style="margin-bottom: var(--cds-gap-sm)">
@@ -384,8 +466,10 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
         <div class="cx-kpis" style="margin-bottom: var(--cds-gap-sm)">
           <div class="cx-card cx-kpi" style="background: var(--color-bg)"><div class="lab">HPB hasil perhitungan</div><div class="big" id="hc-out">—</div><div class="chg cx-flat" id="hc-out-c"></div></div>
         </div>
-        <table id="hc-steps"><thead><tr><th>Langkah</th><th class="n">Nilai</th></tr></thead><tbody></tbody></table>
-        <div class="cx-row" style="margin-top: var(--cds-gap-sm)"><button class="cx-btn" id="hc-save">Simpan ke kurva sebagai HPB</button></div>
+        <details class="cx-fold"><summary>Rincian perhitungan</summary>
+          <table id="hc-steps"><thead><tr><th>Langkah</th><th class="n">Nilai</th></tr></thead><tbody></tbody></table>
+        </details>
+        <div class="cx-row" style="margin-top: var(--cds-gap-sm)"><button class="cx-btn" id="hc-save">Simpan ke kurva sebagai HPB</button><button class="cx-btn" id="hc-roy">Hitung royalti →</button></div>
         <p class="cx-warn" id="hc-msg"></p>
       </div>
 
@@ -411,18 +495,105 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
       </div>
     </div>
 
-    <div class="cx-card cx-method" id="hpb-method">
-      <h2>Metode perhitungan HPB</h2>
-      <h3>1. Harga dasar dari HBA (berlaku sejak Maret 2025)</h3>
-      <p>HBA ditetapkan untuk empat kesetaraan kalori: HBA (6.322 GAR), HBA I (5.300), HBA II (4.100) dan HBA III (3.400). Untuk kalori di antara dua kategori, harga dasar = interpolasi linear kedua HBA menurut kalori, contoh GAR 5.800: HBA I + (HBA − HBA I) × (5.800 − 5.300) / (6.322 − 5.300). Di atas 6.322 GAR: HBA × GAR / 6.322; di bawah 3.400 GAR: HBA III × GAR / 3.400.</p>
-      <h3>2. Koreksi kualitas (opsional)</h3>
-      <p>Harga dasar × (100 − TM) / (100 − TM acuan) − (TS − TS acuan) × koefisien TS − (Ash − Ash acuan) × koefisien Ash. Spesifikasi acuan diinterpolasi dari spesifikasi resmi tiap kategori HBA: 6.322 GAR (TM 12,26%, TS 0,66%, Ash 7,94%), 5.300 GAR (21,32%; 0,75%; 6,04%), 4.100 GAR (35,73%; 0,23%; 3,90%), 3.400 GAR (44,30%; 0,24%; 3,88%). Koefisien default (4 dan 0,4) mengikuti struktur formula HPB sebelumnya.</p>
+    <details class="cx-card cx-method cx-fold-card" id="hpb-method">
+      <summary><h2>Metode perhitungan HPB</h2></summary>
+      <h3>1. Formula per rezim regulasi (dipilih otomatis dari periode HBA)</h3>
+      <table><thead><tr><th>Periode HBA</th><th>Dasar</th><th>Formula harga dasar</th></tr></thead><tbody>
+        <tr><td>Jan–Feb 2023</td><td>Formula sebelum Kepmen 41.K/2023</td><td>Satu kategori: HBA 6.322 GAR, acuan TM 8%, TS 0,8%, Ash 15%</td></tr>
+        <tr><td>Mar–Jul 2023</td><td>Kepmen 41.K/2023</td><td>Satu kategori: ≤ 5.200 GAR → HBA II (4.200); ≤ 6.000 → HBA I (5.200); di atasnya → HBA</td></tr>
+        <tr><td>Agu 2023–Feb 2025</td><td>Kepmen 227.K/2023</td><td>Satu kategori: ≤ 3.400 GAR → HBA III; &lt; 5.300 → HBA II (4.100); ≤ 6.000 → HBA I (5.300); di atasnya → HBA</td></tr>
+        <tr><td>Sejak Mar 2025</td><td>Kepmen 72.K/2025 jo. 268.K/2025</td><td>Interpolasi kalori antar-kategori HBA</td></tr>
+      </tbody></table>
+      <p>Formula satu kategori: HPB = HBA(i) × K(j)/K(i) × (100 − TM(j)) / (100 − TM(i)) [× FKA untuk kalori rendah] − [(TS(j) − TS(i)) × 4 + (Ash(j) − Ash(i)) × 0,4]. i = kategori acuan, j = batubara Anda. Hasil kalkulator diuji terhadap perhitungan HPB per pengapalan tahun 2023 dan cocok sampai US$0,01.</p>
+      <p>Formula sejak Mar 2025: harga dasar = interpolasi linear HBA dua kategori terdekat menurut kalori, contoh GAR 5.800: HBA I + (HBA − HBA I) × (5.800 − 5.300) / (6.322 − 5.300). Di atas 6.322 GAR: HBA × GAR / 6.322; di bawah 3.400 GAR: HBA III × GAR / 3.400. Koreksi kualitas: × (100 − TM) / (100 − TM acuan) − (TS − TS acuan) × 4 − (Ash − Ash acuan) × 0,4, dengan spesifikasi acuan diinterpolasi dari 6.322 GAR (TM 12,26%, TS 0,66%, Ash 7,94%), 5.300 GAR (21,32%; 0,75%; 6,04%), 4.100 GAR (35,73%; 0,23%; 3,90%) dan 3.400 GAR (44,30%; 0,24%; 3,88%).</p>
+      <h3>2. Basis kualitas dan periode HBA</h3>
+      <p>Semua parameter berbasis as received (GAR, TM ar, TS ar, Ash ar). Bila COA mencantumkan TS dan Ash dalam adb, pilih basis adb dan isi IM; konversinya X(ar) = X(adb) × (100 − TM) / (100 − IM). Dengan tanggal B/L, periode HBA dipilih otomatis: sejak Mar 2025 Periode I untuk tanggal 1–14 dan Periode II mulai tanggal 15; sebelumnya HBA bulan B/L. Sebagian perhitungan mencari HBA menurut tanggal terbit Kepmen, sehingga pengapalan awal bulan bisa memakai HBA bulan sebelumnya; pilih periode secara manual bila mengikuti praktik tersebut.</p>
       <h3>3. Status verifikasi</h3>
-      <p>Struktur harga dasar diuji ulang terhadap tabel HPB riil (Mar 2025–Sep 2026) dan cocok dalam ±0,3% pada sebagian besar bulan. Teks lampiran Kepmen ESDM 72.K/MB.01/MEM.B/2025 (diubah dengan 268.K/MB.01/MEM.B/2025) belum dapat diakses dari portal JDIH ESDM saat dashboard ini dibuat, sehingga koefisien koreksi kualitas perlu dicocokkan dengan lampiran resmi sebelum dipakai untuk perhitungan royalti atau kontrak. Kalkulator ini adalah alat bantu estimasi, bukan penetapan resmi.</p>
-    </div>
+      <p>Formula 41.K/2023 dan 227.K/2023 terverifikasi terhadap perhitungan per pengapalan tahun 2023. Formula interpolasi sejak Mar 2025 cocok dengan tabel HPB riil pada sebagian besar bulan, tetapi teks lampiran Kepmen 72.K/2025 dan 268.K/2025 (diubah 144.K/2026) belum dapat diakses dari portal JDIH ESDM saat dashboard ini dibuat. Batas kategori 6.000 GAR, koefisien koreksi kualitas, acuan HBA untuk tier tarif dan biaya standar perlu dicocokkan dengan teks resmi serta angka e-PNBP. Kalkulator ini adalah alat bantu estimasi, bukan penetapan resmi.</p>
+    </details>
   </section>
 
   <!-- ============ TAB 3: DATA ============ -->
+  <!-- ============ TAB: ROYALTI ============ -->
+  <section class="cx-page" id="roy" hidden>
+    <div class="ry-layout">
+      <div class="cx-card ry-form" id="roy-card">
+        <h2>Estimasi royalti</h2>
+        <p class="cx-note">Iuran produksi IUP batubara. Tarif mengikuti tanggal B/L (PP 26/2022 atau PP 19/2025). Input hanya tersimpan di browser ini.</p>
+        <div class="ry-t">Metode tambang</div>
+        <div class="cx-seg" role="group" aria-label="Metode tambang" id="ry-seg">
+          <button type="button" data-v="open" aria-pressed="true">Open pit</button><button type="button" data-v="under" aria-pressed="false">Underground</button>
+        </div>
+        <select id="ry-method" hidden><option value="open">Open pit</option><option value="under">Underground</option></select>
+        <div class="ry-t">Pengapalan</div>
+        <div class="ry-grid">
+          <label class="cx-field">Tanggal B/L<input type="date" id="ry-bl" min="2023-01-01"></label>
+          <label class="cx-field">GAR (kcal/kg)<input type="number" id="ry-cv" step="10" min="1000" placeholder="5800"></label>
+          <label class="cx-field">Tonase (t)<input type="number" id="ry-qty" step="1" min="0" placeholder="60000"></label>
+          <label class="cx-field">Harga jual FOB (USD/t)<input type="number" id="ry-price" step="0.01" min="0"></label>
+        </div>
+        <div class="ry-t">HPB</div>
+        <div class="ry-hpb">
+          <label class="cx-field">HPB (USD/t)<input type="number" id="ry-hpb" step="0.01" min="0"></label>
+          <button type="button" class="cx-btn" id="ry-use">Ambil dari kalkulator HPB</button>
+        </div>
+        <p class="cx-note ry-src" id="ry-hpb-note"></p>
+        <details class="cx-fold ry-more">
+          <summary>Pengaturan lanjutan <span class="ry-chip" id="ry-more-sum"></span></summary>
+          <div class="ry-grid">
+            <label class="cx-field ry-wide">Acuan HBA untuk tier tarif<select id="ry-tier"><option value="main">HBA utama 6.322 GAR</option><option value="cat">HBA kategori sesuai kalori</option></select></label>
+            <label class="cx-field">Kurs (Rp/US$)<input type="number" id="ry-fx" step="1" min="0" placeholder="opsional"></label>
+            <label class="cx-field">Tarif manual (%)<input type="number" id="ry-rate" step="0.1" min="0" max="30" placeholder="otomatis"></label>
+            <label class="cx-field">Barging aktual (USD/t)<input type="number" id="ry-ba" step="0.01" min="0"></label>
+            <label class="cx-field">Barging standar (USD/t)<input type="number" id="ry-bs" step="0.01" min="0"></label>
+            <label class="cx-field">Transhipment aktual (USD/t)<input type="number" id="ry-ta" step="0.01" min="0"></label>
+            <label class="cx-field">Transhipment standar (USD/t)<input type="number" id="ry-ts" step="0.01" min="0"></label>
+          </div>
+          <p class="cx-note">Biaya barging &amp; transhipment diisi hanya bila boleh dikurangkan untuk titik serah penjualan Anda (contoh: FOB vessel); dipakai nilai terkecil antara aktual dan standar.</p>
+        </details>
+      </div>
+
+      <div class="cx-card ry-res" id="ry-res">
+        <div class="ry-lab">Estimasi royalti</div>
+        <div class="ry-big" id="ry-out">—</div>
+        <div class="ry-sub" id="ry-out-c"></div>
+        <div class="ry-stats">
+          <div><div class="ry-lab">Tarif</div><div class="ry-mid" id="ry-rate-out">—</div><div class="ry-sub" id="ry-rate-c"></div></div>
+          <div><div class="ry-lab">Dasar pengenaan per ton</div><div class="ry-mid" id="ry-hdp">—</div><div class="ry-sub" id="ry-hdp-c"></div></div>
+        </div>
+        <div class="ry-lab" style="margin-top:18px">Perbandingan metode tambang</div>
+        <div class="ry-cmp" id="ry-cmp"></div>
+        <p class="cx-warn" id="ry-warn"></p>
+        <details class="cx-fold"><summary>Rincian perhitungan</summary>
+          <table id="ry-steps"><thead><tr><th>Langkah</th><th class="n">Nilai</th></tr></thead><tbody></tbody></table>
+        </details>
+        <div class="cx-row" style="margin: 14px 0 0"><button class="cx-btn" id="ry-save">Simpan ke daftar</button></div>
+        <p class="cx-warn" id="ry-msg"></p>
+      </div>
+    </div>
+
+    <div class="cx-card" id="ry-list-card">
+      <div class="ry-lhead"><div><h2>Daftar pengapalan</h2><p class="cx-note" id="ry-total" style="margin:0"></p></div>
+        <div class="ry-lbtn"><button class="cx-btn" id="ry-dl" hidden>Ekspor CSV</button><button class="cx-btn" id="ry-clear">Hapus semua</button></div></div>
+      <div class="cx-tbl-wrap" id="ry-tbl-wrap" style="max-height: 20rem; margin-top: 10px">
+        <table id="ry-table"><thead><tr><th>Tgl B/L</th><th>Periode HBA</th><th>Metode</th><th class="n">Tonase</th><th class="n">Harga jual</th><th class="n">HPB</th><th class="n">HDP</th><th class="n">Tarif</th><th class="n">Royalti (USD)</th><th class="n">Royalti (Rp)</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <details class="cx-card cx-method cx-fold-card" id="roy-method">
+      <summary><h2>Metode perhitungan royalti</h2></summary>
+      <h3>Rumus</h3>
+      <p>Harga dasar = maks(harga jual, HPB), karena HPB menjadi batas bawah dasar pengenaan royalti. HDP royalti = harga dasar − biaya penyesuaian (barging dan transhipment, masing-masing nilai terkecil antara aktual dan standar), lalu royalti = tonase × HDP × tarif. Tarif mengikuti kelas kalori (≤ 4.200, > 4.200–5.200, > 5.200 GAR), tier HBA (&lt; 70, 70–&lt; 90, ≥ 90 US$/t) dan metode tambang. PP 19/2025 (berlaku 26 Apr 2025) menaikkan tarif open pit tier HBA ≥ 90 untuk kelas ≤ 4.200 (8% → 9%) dan > 4.200–5.200 (10,5% → 11,5%); tarif underground tidak berubah. Struktur ini diuji ulang terhadap perhitungan royalti per pengapalan tahun 2023 dengan hasil identik.</p>
+      <p>Estimasi untuk perencanaan, bukan pengganti perhitungan resmi di e-PNBP. Cakupan: pemegang IUP batubara; IUPK kelanjutan PKP2B memakai skema tarif tersendiri dan belum dicakup. Acuan HBA untuk tier tarif, biaya standar dan koefisien HPB perlu dicocokkan dengan teks resmi serta angka e-PNBP.</p>
+    </details>
+
+    <div class="ry-sticky" id="ry-sticky" hidden>
+      <div><div class="ry-lab">Estimasi royalti</div><div class="ry-sv" id="ry-st-v">—</div></div>
+      <div class="ry-sr" id="ry-st-r"></div>
+      <button type="button" class="cx-btn" id="ry-st-go">Rincian</button>
+    </div>
+  </section>
+
   <section class="cx-page" id="data" hidden>
     <div class="cx-card" id="notes-card" style="margin-bottom: var(--cds-gap-md)">
       <h2>Catatan data</h2>
@@ -1422,53 +1593,125 @@ window.engine = engine;
 
 
   /* ---------- HPB calculator & input ---------- */
+  // Spesifikasi acuan kategori HBA (Kepmen 227.K/2023 dan 72.K/2025 jo. 268.K/2025)
   const CATS = [
     { cv: 6322, key: 'hba', tm: 12.26, ts: 0.66, ash: 7.94, name: 'HBA' },
     { cv: 5300, key: 'hba1', tm: 21.32, ts: 0.75, ash: 6.04, name: 'HBA I' },
     { cv: 4100, key: 'hba2', tm: 35.73, ts: 0.23, ash: 3.90, name: 'HBA II' },
     { cv: 3400, key: 'hba3', tm: 44.30, ts: 0.24, ash: 3.88, name: 'HBA III' },
   ];
-  const hpbCalc = (period, q) => {
+  // Kepmen 41.K/2023 (Mar–Agu 2023): HBA I 5.200 dan HBA II 4.200 GAR
+  const CATS41 = [
+    { cv: 6322, key: 'hba', tm: 12.58, ts: 0.71, ash: 7.58, name: 'HBA' },
+    { cv: 5200, key: 'hba1', tm: 23.12, ts: 0.69, ash: 6.00, name: 'HBA I' },
+    { cv: 4200, key: 'hba2', tm: 35.29, ts: 0.20, ash: 4.21, name: 'HBA II' },
+  ];
+  const CAT_OLD = { cv: 6322, key: 'hba', tm: 8, ts: 0.8, ash: 15, name: 'HBA' };
+  const REGIMES = {
+    old: { label: 'Formula sebelum Kepmen 41.K/2023', pick: () => CAT_OLD, fka: 4200, tm40: true },
+    k41: { label: 'Kepmen 41.K/2023', pick: (cv) => (cv <= 5200 ? CATS41[2] : cv <= 6000 ? CATS41[1] : CATS41[0]), fka: 4200, tm40: true },
+    k227: { label: 'Kepmen 227.K/2023', pick: (cv) => (cv <= 3400 ? CATS[3] : cv < 5300 ? CATS[2] : cv <= 6000 ? CATS[1] : CATS[0]), fka: 4100, tm40: false },
+    k72: { label: 'Kepmen 72.K/2025 jo. 268.K/2025', interp: true },
+  };
+  const regimeKey = (p) => (p.ym < '2023-03' ? 'old' : p.ym < '2023-08' ? 'k41' : p.ym < '2025-03' ? 'k227' : 'k72');
+  const fx4 = loc.format('.4f');
+  // rumus kategori (41.K & 227.K):
+  // HPB = HBA(i) × K(j)/K(i) × (100−TM(j))/(100−TM(i)) [× FKA] − [(TS(j)−TS(i))×kTS + (Ash(j)−Ash(i))×kAsh]
+  const catCalc = (period, q, reg) => {
+    const c = reg.pick(q.cv), h = num(period[c.key]);
+    if (h == null) return null;
+    const steps = [[`${c.name} ${f2(h)} (acuan ${int(c.cv)} GAR)`, h]];
+    const base = h * q.cv / c.cv; let hpb = base;
+    steps.push([`× K(j)/K(i) = ${int(q.cv)} / ${int(c.cv)}`, hpb]);
+    if (q.corr) {
+      const low = q.cv <= reg.fka;
+      if (q.tm != null) {
+        const fA = (100 - q.tm) / (100 - c.tm); hpb *= fA;
+        steps.push([`Koreksi TM: × (100 − ${f2(q.tm)}) / (100 − ${f2(c.tm)}) = × ${fx4(fA)}`, hpb]);
+        if (low) {
+          const fkaJ = (((100 - c.tm) / (100 - q.tm)) * q.tm + (100 - c.tm)) / 100;
+          const fF = (100 - c.tm) / (100 - c.tm / fkaJ); hpb *= fF;
+          steps.push([`Faktor FKA (kalori ≤ ${int(reg.fka)} GAR): × ${fx4(fF)}`, hpb]);
+        }
+      }
+      const skip = reg.tm40 && low && q.tm != null && q.tm >= 40;
+      if (skip) steps.push(['Koreksi TS & Ash tidak dikenakan (kalori rendah dengan TM ≥ 40%)', hpb]);
+      else {
+        if (q.ts != null) { const dB = (q.ts - c.ts) * q.ks; hpb -= dB; steps.push([`Koreksi TS: − (${f2(q.ts)} − ${f2(c.ts)}) × ${f2(q.ks)} = ${sgn(-dB)}`, hpb]); }
+        if (q.ash != null) { const dU = (q.ash - c.ash) * q.ka; hpb -= dU; steps.push([`Koreksi Ash: − (${f2(q.ash)} − ${f2(c.ash)}) × ${f2(q.ka)} = ${sgn(-dU)}`, hpb]); }
+      }
+    }
+    return { hpb, base, ref: { tm: c.tm, ts: c.ts, ash: c.ash }, steps, cat: c };
+  };
+  // rumus sejak Mar 2025: interpolasi kalori antar-kategori HBA
+  const interpCalc = (period, q) => {
     const steps = [];
     const lo = CATS.slice().sort((a, b) => a.cv - b.cv);
     const val = (c) => num(period[c.key]);
-    let base, ref;
-    if (q.cv >= lo[lo.length - 1].cv) {
-      const c = lo[lo.length - 1]; if (val(c) == null) return null;
-      base = val(c) * q.cv / c.cv; ref = { tm: c.tm, ts: c.ts, ash: c.ash };
-      steps.push([`${c.name} ${f2(val(c))} × ${int(q.cv)} / ${int(c.cv)}`, base]);
-    } else if (q.cv <= lo[0].cv) {
-      const c = lo[0]; if (val(c) == null) return null;
-      base = val(c) * q.cv / c.cv; ref = { tm: c.tm, ts: c.ts, ash: c.ash };
+    let base, ref, cat;
+    if (q.cv >= lo[lo.length - 1].cv || q.cv <= lo[0].cv) {
+      const c = q.cv >= lo[lo.length - 1].cv ? lo[lo.length - 1] : lo[0]; if (val(c) == null) return null;
+      base = val(c) * q.cv / c.cv; ref = { tm: c.tm, ts: c.ts, ash: c.ash }; cat = c;
       steps.push([`${c.name} ${f2(val(c))} × ${int(q.cv)} / ${int(c.cv)}`, base]);
     } else {
       let i = 0; while (!(q.cv >= lo[i].cv && q.cv <= lo[i + 1].cv)) i++;
       const a = lo[i], b = lo[i + 1];
       if (val(a) == null || val(b) == null) return null;
       const w = (q.cv - a.cv) / (b.cv - a.cv);
-      base = val(a) + (val(b) - val(a)) * w;
+      base = val(a) + (val(b) - val(a)) * w; cat = a;
       ref = { tm: a.tm + (b.tm - a.tm) * w, ts: a.ts + (b.ts - a.ts) * w, ash: a.ash + (b.ash - a.ash) * w };
       steps.push([`${a.name} ${f2(val(a))} (${int(a.cv)} GAR)`, val(a)], [`${b.name} ${f2(val(b))} (${int(b.cv)} GAR)`, val(b)],
-        [`Interpolasi kalori, bobot ${loc.format('.4f')(w)}`, base]);
+        [`Interpolasi kalori, bobot ${fx4(w)}`, base]);
     }
     let hpb = base;
     if (q.corr) {
-      if (q.tm != null) { const fA = (100 - q.tm) / (100 - ref.tm); hpb *= fA; steps.push([`Koreksi TM: × (100 − ${f2(q.tm)}) / (100 − ${f2(ref.tm)}) = × ${loc.format('.4f')(fA)}`, hpb]); }
+      if (q.tm != null) { const fA = (100 - q.tm) / (100 - ref.tm); hpb *= fA; steps.push([`Koreksi TM: × (100 − ${f2(q.tm)}) / (100 − ${f2(ref.tm)}) = × ${fx4(fA)}`, hpb]); }
       if (q.ts != null) { const dB = (q.ts - ref.ts) * q.ks; hpb -= dB; steps.push([`Koreksi TS: − (${f2(q.ts)} − ${f2(ref.ts)}) × ${f2(q.ks)} = ${sgn(-dB)}`, hpb]); }
       if (q.ash != null) { const dU = (q.ash - ref.ash) * q.ka; hpb -= dU; steps.push([`Koreksi Ash: − (${f2(q.ash)} − ${f2(ref.ash)}) × ${f2(q.ka)} = ${sgn(-dU)}`, hpb]); }
     }
-    return { hpb, base, ref, steps };
+    return { hpb, base, ref, steps, cat };
+  };
+  const hpbCalc = (period, q) => {
+    const rk = regimeKey(period), reg = REGIMES[rk];
+    const pre = [];
+    if (q.basis === 'adb') {
+      // konversi adb → ar: X(ar) = X(adb) × (100 − TM) / (100 − IM)
+      if (q.tm == null || q.im == null) return { err: 'Basis adb memerlukan TM dan IM.' };
+      const f = (100 - q.tm) / (100 - q.im);
+      if (q.ts != null) { pre.push([`TS ar = ${f2(q.ts)} × (100 − ${f2(q.tm)}) / (100 − ${f2(q.im)})`, q.ts * f]); q = { ...q, ts: q.ts * f }; }
+      if (q.ash != null) { pre.push([`Ash ar = ${f2(q.ash)} × (100 − ${f2(q.tm)}) / (100 − ${f2(q.im)})`, q.ash * f]); q = { ...q, ash: q.ash * f }; }
+    }
+    const r = reg.interp ? interpCalc(period, q) : catCalc(period, q, reg);
+    if (!r) return null;
+    r.steps = pre.concat(r.steps);
+    return { ...r, rk, reg, q };
   };
   const hcEl = (id) => document.getElementById(id);
   let hcBuilt = false, hcLast = null;
+  // periode HBA untuk tanggal B/L: sejak Mar 2025 Periode I berlaku tgl 1–14, Periode II mulai tgl 15
+  const periodFor = (per, d) => {
+    const ym = d.slice(0, 7), day = Number(d.slice(8, 10));
+    const idx = per.map((r, i) => (r.ym === ym ? i : -1)).filter((i) => i >= 0);
+    if (!idx.length) return { i: null };
+    if (idx.length === 1) return { i: idx[0], warn: day >= 15 && ym >= '2025-03' ? 'HBA Periode II bulan ini belum ada di data; dipakai Periode I.' : '' };
+    return { i: day >= 15 ? idx[1] : idx[0] };
+  };
+  const refDate = (p) => (hcEl('hc-bl').value || `${p.ym}-${/P2$/.test(p.label) ? '15' : '01'}`);
   const buildHc = () => {
     const per = dash.data('hba_periods');
     if (per.status !== 'ok' || hcBuilt) return;
     const rows = per.data.filter((r) => num(r.hba) != null).slice().reverse();
-    hcEl('hc-period').replaceChildren(...rows.map((r, i) => new Option(`${r.label}${r.ym < '2025-03' ? ' (formula lama)' : ''}`, String(per.data.length - 1 - i))));
+    hcEl('hc-period').replaceChildren(...rows.map((r) => new Option(r.label, String(per.data.indexOf(r)))));
     hcEl('hc-ym').value = mmyy(rows[0].ym);
-    ['hc-period', 'hc-cv', 'hc-tm', 'hc-ts', 'hc-ash', 'hc-corr', 'hc-ks', 'hc-ka'].forEach((id) => hcEl(id).addEventListener('input', drawHpb));
-    hcEl('hc-period').addEventListener('change', () => { const r = per.data[Number(hcEl('hc-period').value)]; hcEl('hc-ym').value = mmyy(r.ym); drawHpb(); });
+    ['hc-period', 'hc-cv', 'hc-tm', 'hc-ts', 'hc-ash', 'hc-im', 'hc-basis', 'hc-corr', 'hc-ks', 'hc-ka'].forEach((id) => hcEl(id).addEventListener('input', drawHpb));
+    hcEl('hc-period').addEventListener('change', () => { const r = per.data[Number(hcEl('hc-period').value)]; hcEl('hc-ym').value = mmyy(r.ym); hcEl('hc-bl').value = ''; hcEl('hc-bl-msg').textContent = ''; drawHpb(); });
+    hcEl('hc-bl').addEventListener('change', () => {
+      const d = hcEl('hc-bl').value, m = hcEl('hc-bl-msg'); m.textContent = '';
+      if (!d) { drawHpb(); return; }
+      const f = periodFor(per.data, d);
+      if (f.i == null || num(per.data[f.i].hba) == null) { m.textContent = 'HBA untuk bulan B/L ini belum ada di data dashboard.'; drawHpb(); return; }
+      hcEl('hc-period').value = String(f.i); hcEl('hc-ym').value = mmyy(per.data[f.i].ym); m.textContent = f.warn || ''; drawHpb();
+    });
     hcEl('hc-save').addEventListener('click', () => {
       const ym = parseYm(hcEl('hc-ym').value);
       if (!ym || !hcLast) { hcEl('hc-msg').textContent = !ym ? 'Isi bulan tujuan (mm/yy).' : 'Lengkapi input kalkulator.'; return; }
@@ -1504,27 +1747,40 @@ window.engine = engine;
   });
   hcEl('hi-clear').addEventListener('click', () => { if (!state.hpb.length) return; if (STANDALONE && !confirm('Hapus semua HPB yang tersimpan di browser ini?')) return; state.hpb = []; persistHpb(); draw(); });
   hcEl('hi-table').addEventListener('click', (e) => { const b = e.target.closest('button[data-hdel]'); if (!b) return; state.hpb = state.hpb.filter((r) => r.ym !== b.dataset.hdel); persistHpb(); draw(); });
+  const fillSteps = (tb, rows) => {
+    tb.replaceChildren(...rows.map(([t, v, fmt], i) => {
+      const tr = document.createElement('tr'); const a = document.createElement('td'); a.textContent = t; const b = document.createElement('td'); b.className = 'n';
+      b.textContent = v == null ? '' : (fmt ? fmt(v) : f2(v));
+      if (i === rows.length - 1) { a.style.fontWeight = b.style.fontWeight = 'var(--cds-font-weight-medium)'; }
+      tr.append(a, b); return tr;
+    }));
+  };
   function drawHpb() {
     buildHc();
     const per = dash.data('hba_periods');
     if (per.status === 'ok' && hcBuilt) {
       const p = per.data[Number(hcEl('hc-period').value)];
-      const q = { cv: pnum(hcEl('hc-cv').value), tm: pnum(hcEl('hc-tm').value), ts: pnum(hcEl('hc-ts').value), ash: pnum(hcEl('hc-ash').value),
-        corr: hcEl('hc-corr').checked, ks: pnum(hcEl('hc-ks').value) ?? 4, ka: pnum(hcEl('hc-ka').value) ?? 0.4 };
-      ['tm', 'ts', 'ash'].forEach((k) => { if (q[k] != null && isNaN(q[k])) q[k] = null; });
+      const basis = hcEl('hc-basis').value;
+      hcEl('hc-im-wrap').hidden = basis !== 'adb';
+      const q = { cv: pnum(hcEl('hc-cv').value), tm: pnum(hcEl('hc-tm').value), ts: pnum(hcEl('hc-ts').value), ash: pnum(hcEl('hc-ash').value), im: pnum(hcEl('hc-im').value),
+        basis, corr: hcEl('hc-corr').checked, ks: pnum(hcEl('hc-ks').value) ?? 4, ka: pnum(hcEl('hc-ka').value) ?? 0.4 };
+      ['tm', 'ts', 'ash', 'im'].forEach((k) => { if (q[k] != null && isNaN(q[k])) q[k] = null; });
       const tb = document.querySelector('#hc-steps tbody');
-      if (!q.cv || isNaN(q.cv) || q.cv < 1000) { hcEl('hc-out').textContent = '—'; hcEl('hc-out-c').textContent = 'Isi nilai kalor GAR'; tb.replaceChildren(); hcLast = null; }
+      const rk = regimeKey(p);
+      hcEl('hc-regime').textContent = `Formula: ${REGIMES[rk].label}${REGIMES[rk].interp ? ' · interpolasi kalori antar-kategori HBA' : ' · satu kategori HBA'}`;
+      hcLast = null;
+      if (!q.cv || isNaN(q.cv) || q.cv < 1000) { hcEl('hc-out').textContent = '—'; hcEl('hc-out-c').textContent = 'Isi nilai kalor GAR'; tb.replaceChildren(); }
       else {
         const r = hpbCalc(p, q);
-        if (!r) { hcEl('hc-out').textContent = '—'; hcEl('hc-out-c').textContent = 'HBA kategori ini tidak tersedia untuk periode terpilih'; tb.replaceChildren(); hcLast = null; }
+        if (!r || r.err) { hcEl('hc-out').textContent = '—'; hcEl('hc-out-c').textContent = r && r.err ? r.err : 'HBA kategori ini tidak tersedia untuk periode terpilih'; tb.replaceChildren(); }
         else {
-          hcLast = { ...r, cv: q.cv };
+          hcLast = { ...r, cv: q.cv, period: p };
           hcEl('hc-out').textContent = usd(r.hpb);
           hcEl('hc-out-c').textContent = `${int(q.cv)} GAR · HBA ${p.label}${q.corr ? ' · dengan koreksi kualitas' : ' · tanpa koreksi kualitas'}`;
           const rows = r.steps.concat([[`Spesifikasi acuan pada ${int(q.cv)} GAR: TM ${f2(r.ref.tm)}%, TS ${f2(r.ref.ts)}%, Ash ${f2(r.ref.ash)}%`, null], ['HPB', r.hpb]]);
-          tb.replaceChildren(...rows.map(([t, v], i) => { const tr = document.createElement('tr'); const a = document.createElement('td'); a.textContent = t; const b = document.createElement('td'); b.className = 'n'; b.textContent = v == null ? '' : f2(v); if (i === rows.length - 1) { a.style.fontWeight = b.style.fontWeight = 'var(--cds-font-weight-medium)'; } tr.append(a, b); return tr; }));
+          fillSteps(tb, rows);
         }
-        hcEl('hc-msg').textContent = p.ym < '2025-03' ? 'Periode sebelum Maret 2025 memakai formula HPB lama (berbasis satu kategori HBA); hasil interpolasi ini hanya pendekatan.' : '';
+        hcEl('hc-msg').textContent = !q.corr && !REGIMES[rk].interp ? 'Formula periode ini memasukkan koreksi TM, TS dan Ash; centang koreksi kualitas untuk hasil yang sebanding dengan perhitungan resmi.' : '';
       }
       hcEl('hc-coef-box').style.opacity = q.corr ? 1 : 0.6;
     }
@@ -1535,6 +1791,181 @@ window.engine = engine;
       const td = document.createElement('td'); const b = document.createElement('button'); b.className = 'cx-btn'; b.dataset.hdel = r.ym; b.textContent = 'Hapus'; td.append(b); tr.append(td);
       return tr;
     }));
+  }
+
+  /* ---------- royalty estimate (tab Royalti) ---------- */
+  // Tarif royalti IUP batubara (% dari harga per ton), [kelas kalori][tier HBA]
+  // kelas: ≤4.200 | >4.200–5.200 | >5.200 GAR; tier: HBA < 70 | 70 ≤ HBA < 90 | HBA ≥ 90
+  const TARIF = {
+    pp26: { label: 'PP 26/2022', open: [[5, 6, 8], [7, 8.5, 10.5], [9.5, 11.5, 13.5]], under: [[4, 5, 7], [6, 7.5, 9.5], [8.5, 10.5, 12.5]] },
+    pp19: { label: 'PP 19/2025', open: [[5, 6, 9], [7, 8.5, 11.5], [9.5, 11.5, 13.5]], under: [[4, 5, 7], [6, 7.5, 9.5], [8.5, 10.5, 12.5]] },
+  };
+  const royReg = (d) => (d >= '2025-04-26' ? 'pp19' : d >= '2022-08-15' ? 'pp26' : null);
+  const CLS = ['≤ 4.200 GAR', '> 4.200–5.200 GAR', '> 5.200 GAR'], TIER = ['HBA < US$70', 'US$70 ≤ HBA < US$90', 'HBA ≥ US$90'];
+  const METHOD = { open: 'Open pit', under: 'Underground' };
+  const ROY_KEY = 'coal_dashboard_roy_v1', ROYCFG_KEY = 'coal_dashboard_roycfg_v1';
+  state.roy = []; state.roycfg = { method: 'open', tier: 'main', bs: '', ts: '' };
+  try { if (window.__store) { const s = window.__store.load(ROY_KEY); if (Array.isArray(s)) state.roy = s.filter((r) => r && r.d && Number(r.usd) >= 0);
+    const c = window.__store.load(ROYCFG_KEY); if (c && typeof c === 'object') state.roycfg = { ...state.roycfg, ...c }; } } catch (e) { /* abaikan */ }
+  const persistRoy = () => { try { if (window.__store) { window.__store.save(ROY_KEY, state.roy); window.__store.save(ROYCFG_KEY, state.roycfg); } } catch (e) { /* abaikan */ } };
+  const pctf = (v) => loc.format('.1~f')(v) + '%';
+  const dmy = (d) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(2, 4)}`;
+  // HBA penentu tier: HBA utama, atau HBA kategori yang dipakai untuk kalori tersebut
+  const tierHba = (p, cv, mode) => {
+    if (mode === 'main') return { v: num(p.hba), name: 'HBA' };
+    const reg = REGIMES[regimeKey(p)];
+    const c = reg.interp ? (cv >= 6322 ? CATS[0] : cv >= 5300 ? CATS[1] : cv >= 4100 ? CATS[2] : CATS[3]) : reg.pick(cv);
+    return { v: num(p[c.key]), name: c.name };
+  };
+  const royCalc = (o) => {
+    const rg = royReg(o.d); if (!rg) return { err: 'Tarif royalti sebelum 15 Agu 2022 tidak dicakup kalkulator ini.' };
+    const cls = o.cv <= 4200 ? 0 : o.cv <= 5200 ? 1 : 2, tier = o.hba.v < 70 ? 0 : o.hba.v < 90 ? 1 : 2;
+    const tab = TARIF[rg][o.method][cls][tier];
+    const rate = o.rate != null ? o.rate : tab;
+    const base = Math.max(o.price ?? 0, o.hpb ?? 0);
+    const mn = (a, s) => (a == null ? 0 : s == null ? a : Math.min(a, s));
+    const cost = mn(o.ba, o.bs) + mn(o.ta, o.ts);
+    const hdp = base - cost, perT = hdp * rate / 100, total = perT * o.qty;
+    return { rg, cls, tier, tab, rate, base, cost, hdp, perT, total, rp: o.fx ? total * o.fx : null };
+  };
+  const ryv = (id) => { const v = pnum(hcEl(id).value); return v == null || isNaN(v) ? null : v; };
+  const royInput = () => {
+    const per = dash.data('hba_periods'); if (per.status !== 'ok') return { err: 'Memuat data HBA…' };
+    const d = hcEl('ry-bl').value, cv = ryv('ry-cv'), qty = ryv('ry-qty'), price = ryv('ry-price'), hpb = ryv('ry-hpb');
+    if (!d) return { err: 'Isi tanggal B/L.' };
+    if (!cv || cv < 1000) return { err: 'Isi nilai kalor GAR.' };
+    if (!qty || qty <= 0) return { err: 'Isi tonase pengapalan.' };
+    if (price == null) return { err: 'Isi harga jual FOB (USD/t).' };
+    if (hpb == null) return { err: 'Isi HPB atau ambil dari kalkulator HPB.' };
+    const f = periodFor(per.data, d);
+    if (f.i == null || num(per.data[f.i].hba) == null) return { err: 'HBA untuk bulan B/L ini belum ada di data dashboard.' };
+    const p = per.data[f.i], method = hcEl('ry-method').value, tierMode = hcEl('ry-tier').value;
+    return { d, p, pwarn: f.warn || '', method, tierMode, cv, hba: tierHba(p, cv, tierMode), qty, price, hpb,
+      ba: ryv('ry-ba'), bs: ryv('ry-bs'), ta: ryv('ry-ta'), ts: ryv('ry-ts'), fx: ryv('ry-fx'), rate: ryv('ry-rate') };
+  };
+  let ryBuilt = false, ryLast = null;
+  const syncSeg = () => { const v = hcEl('ry-method').value; document.querySelectorAll('#ry-seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v))); };
+  const saveCfg = () => { state.roycfg = { method: hcEl('ry-method').value, tier: hcEl('ry-tier').value, bs: hcEl('ry-bs').value, ts: hcEl('ry-ts').value }; persistRoy(); };
+  // isi tab Royalti dari hasil kalkulator HPB
+  const fillFromHpb = () => {
+    if (!hcLast) return false;
+    hcEl('ry-hpb').value = (Math.round(hcLast.hpb * 100) / 100).toFixed(2);
+    hcEl('ry-cv').value = String(hcLast.cv);
+    hcEl('ry-bl').value = refDate(hcLast.period);
+    return true;
+  };
+  const buildRoy = () => {
+    if (ryBuilt || !hcEl('ry-method')) return;
+    hcEl('ry-method').value = state.roycfg.method; hcEl('ry-tier').value = state.roycfg.tier;
+    hcEl('ry-bs').value = state.roycfg.bs ?? ''; hcEl('ry-ts').value = state.roycfg.ts ?? '';
+    syncSeg();
+    document.querySelectorAll('#ry-seg button').forEach((b) => b.addEventListener('click', () => { hcEl('ry-method').value = b.dataset.v; syncSeg(); saveCfg(); drawRoy(); }));
+    ['ry-bl', 'ry-cv', 'ry-tier', 'ry-qty', 'ry-price', 'ry-hpb', 'ry-ba', 'ry-bs', 'ry-ta', 'ry-ts', 'ry-fx', 'ry-rate'].forEach((id) => {
+      hcEl(id).addEventListener('input', () => { saveCfg(); drawRoy(); }); hcEl(id).addEventListener('change', () => drawRoy());
+    });
+    hcEl('ry-use').addEventListener('click', () => { buildHc(); if (!fillFromHpb()) { hcEl('ry-msg').textContent = 'Belum ada hasil di kalkulator HPB. Hitung dulu di tab Kalkulator HPB.'; } else hcEl('ry-msg').textContent = ''; drawRoy(); });
+    hcEl('ry-save').addEventListener('click', () => {
+      if (!ryLast) { hcEl('ry-msg').textContent = 'Lengkapi input royalti terlebih dahulu.'; return; }
+      const { o, r } = ryLast;
+      state.roy.push({ id: Date.now(), d: o.d, per: o.p.label, method: o.method, cv: o.cv, qty: o.qty, price: o.price, hpb: Math.round(o.hpb * 100) / 100,
+        hdp: Math.round(r.hdp * 100) / 100, rate: r.rate, usd: Math.round(r.total * 100) / 100, rp: r.rp == null ? null : Math.round(r.rp) });
+      persistRoy(); hcEl('ry-msg').textContent = 'Estimasi disimpan ke daftar pengapalan.'; drawRoy();
+    });
+    hcEl('ry-table').addEventListener('click', (e) => { const b = e.target.closest('button[data-rdel]'); if (!b) return; state.roy = state.roy.filter((r) => String(r.id) !== b.dataset.rdel); persistRoy(); drawRoy(); });
+    hcEl('ry-clear').addEventListener('click', () => { if (!state.roy.length) return; if (STANDALONE && !confirm('Hapus semua estimasi royalti yang tersimpan di browser ini?')) return; state.roy = []; persistRoy(); drawRoy(); });
+    hcEl('ry-dl').hidden = !STANDALONE;
+    hcEl('ry-dl').addEventListener('click', () => {
+      const head = 'tanggal_bl,periode_hba,metode,gar,tonase,harga_jual_usd_t,hpb_usd_t,hdp_royalti_usd_t,tarif_pct,royalti_usd,royalti_rp';
+      const lines = state.roy.map((r) => [r.d, r.per, r.method, r.cv, r.qty, r.price, r.hpb, r.hdp, r.rate, r.usd, r.rp ?? ''].join(','));
+      const blob = new Blob([[head].concat(lines).join('\n') + '\n'], { type: 'text/csv' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'estimasi_royalti.csv'; document.body.append(a); a.click(); a.remove();
+    });
+    // bilah ringkas di HP: tampil saat kartu hasil tidak terlihat
+    const st = hcEl('ry-sticky');
+    hcEl('ry-st-go').addEventListener('click', () => hcEl('ry-res').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((en) => { st.dataset.away = en[0].isIntersecting ? '0' : '1'; st.hidden = !(state.page === 'roy' && st.dataset.away === '1' && st.dataset.ok === '1'); }, { threshold: 0.15 }).observe(hcEl('ry-res'));
+    }
+    ryBuilt = true;
+  };
+  hcEl('hc-roy').addEventListener('click', () => { if (!fillFromHpb()) { hcEl('hc-msg').textContent = 'Lengkapi input kalkulator.'; return; } showPage('roy'); window.scrollTo({ top: 0 }); });
+  function drawRoy() {
+    buildRoy();
+    if (!ryBuilt) return;
+    const out = hcEl('ry-out'), outc = hcEl('ry-out-c'), tb = document.querySelector('#ry-steps tbody'), cmp = hcEl('ry-cmp'), st = hcEl('ry-sticky');
+    // sumber HPB dari kalkulator
+    buildHc();
+    hcEl('ry-hpb-note').textContent = hcLast ? `Kalkulator HPB: ${usd(hcLast.hpb)} · ${int(hcLast.cv)} GAR · HBA ${hcLast.period.label}` : 'Belum ada hasil di kalkulator HPB; isi HPB manual atau hitung di tab Kalkulator HPB.';
+    const o = royInput(); ryLast = null;
+    const res = hcEl('ry-res');
+    const clear = (msg) => { res.classList.add('is-empty'); out.textContent = '—'; outc.textContent = msg; hcEl('ry-rate-out').textContent = '—'; hcEl('ry-rate-c').textContent = ''; hcEl('ry-hdp').textContent = '—'; hcEl('ry-hdp-c').textContent = ''; cmp.replaceChildren(); tb.replaceChildren(); st.dataset.ok = '0'; };
+    const warn = [];
+    if (o.err) clear(o.err);
+    else {
+      const r = royCalc(o);
+      if (r.err) clear(r.err);
+      else if (o.hba.v == null) clear('HBA acuan tier tidak tersedia untuk periode ini.');
+      else {
+        res.classList.remove('is-empty');
+        ryLast = { o, r };
+        out.textContent = usd(r.total);
+        outc.textContent = `${int(o.qty)} t · ${METHOD[o.method]} · ${r.rp != null ? 'Rp' + int(Math.round(r.rp)) : 'isi kurs untuk nilai Rupiah'}`;
+        hcEl('ry-rate-out').textContent = pctf(r.rate);
+        hcEl('ry-rate-c').textContent = o.rate != null ? `tarif manual (tabel: ${pctf(r.tab)})` : `${TARIF[r.rg].label} · ${CLS[r.cls]} · ${TIER[r.tier]}`;
+        hcEl('ry-hdp').textContent = usd(r.hdp);
+        hcEl('ry-hdp-c').textContent = o.hpb > o.price ? 'dasar = HPB (harga jual di bawah HPB)' : 'dasar = harga jual';
+        // perbandingan kedua metode, tarif tabel
+        const both = ['open', 'under'].map((m) => ({ m, r: royCalc({ ...o, method: m, rate: null }) }));
+        const mx = d3.max(both, (b) => b.r.total) || 1;
+        cmp.replaceChildren(...both.map(({ m, r: rr }) => {
+          const row = document.createElement('button'); row.type = 'button'; row.className = 'ry-cr'; row.setAttribute('aria-pressed', String(m === o.method));
+          const nm = document.createElement('span'); nm.className = 'ry-cn'; nm.textContent = METHOD[m];
+          const rt = document.createElement('span'); rt.className = 'ry-crt'; rt.textContent = pctf(rr.tab);
+          const bar = document.createElement('span'); bar.className = 'ry-bar'; const fill = document.createElement('i'); fill.style.width = `${Math.max(2, rr.total / mx * 100)}%`; bar.append(fill);
+          const v = document.createElement('span'); v.className = 'ry-cv'; v.textContent = usd(rr.total);
+          row.append(nm, rt, bar, v);
+          row.addEventListener('click', () => { hcEl('ry-method').value = m; syncSeg(); saveCfg(); drawRoy(); });
+          return row;
+        }));
+        const diff = Math.abs(both[0].r.total - both[1].r.total);
+        if (diff > 0) { const n = document.createElement('div'); n.className = 'ry-sub'; n.textContent = `Selisih ${usd(diff)} untuk pengapalan ini.`; cmp.append(n); }
+        const rows = [
+          [`Tanggal B/L ${dmy(o.d)} · HBA ${o.p.label}`, null],
+          ['Harga jual FOB (USD/t)', o.price],
+          ['HPB (USD/t)', o.hpb],
+          ['Harga dasar = maks(harga jual, HPB)', r.base],
+          ['Biaya penyesuaian = min(barging aktual, standar) + min(transhipment aktual, standar)', -r.cost],
+          ['Harga dasar pengenaan (HDP) royalti per ton', r.hdp],
+          [`Acuan tier: ${o.hba.name} ${f2(o.hba.v)} → ${TIER[r.tier]}; kelas ${CLS[r.cls]}; ${METHOD[o.method]}`, null],
+          [`Tarif ${o.rate != null ? 'manual' : TARIF[r.rg].label}`, r.rate, pctf],
+          ['Royalti per ton = HDP × tarif', r.perT],
+          [`Royalti = ${int(o.qty)} t × royalti per ton (USD)`, r.total],
+        ];
+        if (r.rp != null) rows.push([`Royalti dalam Rupiah (kurs Rp${int(o.fx)}/US$)`, r.rp, (v) => 'Rp' + int(Math.round(v))]);
+        fillSteps(tb, rows);
+        hcEl('ry-st-v').textContent = usd(r.total); hcEl('ry-st-r').textContent = `${pctf(r.rate)} · ${METHOD[o.method]}`; st.dataset.ok = '1';
+        if (o.pwarn) warn.push(o.pwarn);
+        if ((o.ba != null && o.bs == null) || (o.ta != null && o.ts == null)) warn.push('Biaya standar belum diisi; biaya aktual dipakai penuh.');
+        if (o.tierMode === 'cat') warn.push('Acuan tier kategori kalori belum terkonfirmasi; praktik umum memakai HBA utama 6.322.');
+      }
+    }
+    hcEl('ry-warn').textContent = warn.join(' ');
+    st.hidden = !(state.page === 'roy' && st.dataset.away === '1' && st.dataset.ok === '1');
+    // ringkasan pengaturan lanjutan
+    const cost = ['ry-ba', 'ry-ta'].some((id) => ryv(id) != null), fx = ryv('ry-fx'), rt = ryv('ry-rate');
+    hcEl('ry-more-sum').textContent = [hcEl('ry-tier').value === 'main' ? 'HBA utama' : 'HBA kategori', cost ? 'dengan biaya' : 'tanpa biaya', fx ? 'kurs ' + int(fx) : null, rt != null ? 'tarif manual' : null].filter(Boolean).join(' · ');
+    // daftar pengapalan
+    const t = document.querySelector('#ry-table tbody');
+    t.replaceChildren(...state.roy.slice().sort((a, b) => b.d.localeCompare(a.d)).map((r) => {
+      const tr = document.createElement('tr');
+      [dmy(r.d), r.per, METHOD[r.method] || r.method, int(r.qty), f2(r.price), f2(r.hpb), f2(r.hdp), pctf(r.rate), f2(r.usd), r.rp == null ? '' : int(r.rp)]
+        .forEach((v, i) => { const td = document.createElement('td'); if (i >= 3) td.className = 'n'; td.textContent = v; tr.append(td); });
+      const td = document.createElement('td'); const b = document.createElement('button'); b.className = 'cx-btn'; b.dataset.rdel = String(r.id); b.textContent = 'Hapus'; td.append(b); tr.append(td);
+      return tr;
+    }));
+    hcEl('ry-tbl-wrap').hidden = !state.roy.length; hcEl('ry-clear').hidden = !state.roy.length; hcEl('ry-dl').hidden = !STANDALONE || !state.roy.length;
+    const tot = d3.sum(state.roy, (r) => r.usd), q = d3.sum(state.roy, (r) => r.qty);
+    hcEl('ry-total').textContent = state.roy.length ? `Total ${state.roy.length} pengapalan: ${int(q)} t, royalti ${usd(tot)}.` : 'Belum ada estimasi yang disimpan.';
   }
 
   /* ---------- draw: data tables ---------- */
@@ -1596,6 +2027,7 @@ window.engine = engine;
     if (state.page === 'sim') { drawSim(); drawFactors(); }
     if (state.page === 'data') drawData();
     if (state.page === 'hpb') drawHpb();
+    if (state.page === 'roy') { drawHpb(); drawRoy(); }
   };
   dash.onData(draw);
   const named = location.hash.slice(1);
@@ -1851,11 +2283,123 @@ window.engine = engine;
     'Catatan data': 'Data notes',
     'Jenis': 'Type',
     'Isi per bulan (FOB, USD/ton). Data tersimpan': 'Enter monthly (FOB, USD/ton). Data is stored',
+    "Hitung HPB dari kualitas batubara dan HBA periode terpilih. Formula dipilih otomatis sesuai rezim regulasi periode HBA. Hasilnya bisa disimpan sebagai titik HPB di kurva tren dan dipakai untuk estimasi royalti.": "Calculate HPB from coal quality and the HBA of a selected period. The formula is chosen automatically according to the regulatory regime of that HBA period. You can save the result as an HPB point on the trend chart and use it for the royalty estimate.",
+    "Tanggal B/L (opsional)": "B/L date (optional)",
+    "Basis TS & Ash": "TS & Ash basis",
+    "ar (as received)": "ar (as received)",
+    "adb (air dried) + IM": "adb (air dried) + IM",
+    "Total sulphur (%)": "Total sulphur (%)",
+    "Ash (%)": "Ash (%)",
+    "Inherent moisture adb (%)": "Inherent moisture adb (%)",
+    "Estimasi royalti (iuran produksi)": "Royalty estimate (production levy)",
+    "Memakai HPB, nilai kalor dan periode HBA dari kalkulator HPB di atas (atau HPB yang Anda isi manual). Tarif dipilih otomatis menurut tanggal B/L: PP 26/2022 sebelum 26 Apr 2025, PP 19/2025 sesudahnya. Semua input hanya tersimpan di browser perangkat ini.": "Uses the HPB, calorific value and HBA period from the HPB calculator above (or an HPB you enter manually). The rate is chosen automatically from the B/L date: PP 26/2022 before 26 Apr 2025, PP 19/2025 from then on. All inputs are stored only in this device’s browser.",
+    "Metode tambang": "Mining method",
+    "Open pit (tambang terbuka)": "Open pit",
+    "Underground (tambang bawah tanah)": "Underground",
+    "Acuan HBA untuk tier tarif": "HBA reference for the rate tier",
+    "HBA utama 6.322 GAR": "Main HBA 6,322 GAR",
+    "HBA kategori sesuai kalori": "HBA category matching calorific value",
+    "Tonase (t)": "Tonnage (t)",
+    "Harga jual FOB (USD/t)": "FOB selling price (USD/t)",
+    "Kurs (Rp/US$, opsional)": "Exchange rate (Rp/US$, optional)",
+    "dari kalkulator": "from calculator",
+    "otomatis": "automatic",
+    "Biaya penyesuaian (barging & transhipment) dan tarif manual": "Adjustment costs (barging & transhipment) and manual rate",
+    "Isi hanya bila biaya ini memang boleh dikurangkan untuk titik serah penjualan Anda (contoh: FOB vessel). Nilai yang dipakai = nilai terkecil antara biaya aktual dan biaya standar. Biaya standar disimpan sebagai pengaturan Anda.": "Fill in only if these costs may be deducted for your point of sale (e.g. FOB vessel). The value used = the lower of actual and standard cost. Standard costs are saved as your settings.",
+    "Barging aktual (USD/t)": "Actual barging (USD/t)",
+    "Barging standar (USD/t)": "Standard barging (USD/t)",
+    "Transhipment aktual (USD/t)": "Actual transhipment (USD/t)",
+    "Transhipment standar (USD/t)": "Standard transhipment (USD/t)",
+    "Tarif manual (%)": "Manual rate (%)",
+    "Estimasi royalti": "Estimated royalty",
+    "Tarif royalti": "Royalty rate",
+    "HDP royalti per ton": "Royalty base (HDP) per tonne",
+    "Simpan ke daftar pengapalan": "Save to shipment list",
+    "Tgl B/L": "B/L date",
+    "Metode": "Method",
+    "Tonase": "Tonnage",
+    "Harga jual": "Selling price",
+    "HDP": "HDP",
+    "Tarif": "Rate",
+    "Royalti (USD)": "Royalty (USD)",
+    "Royalti (Rp)": "Royalty (Rp)",
+    "Estimasi untuk perencanaan, bukan pengganti perhitungan resmi di e-PNBP. Cakupan: pemegang IUP batubara; IUPK kelanjutan PKP2B memakai skema tarif tersendiri dan belum dicakup.": "An estimate for planning, not a substitute for the official calculation in e-PNBP. Scope: coal IUP holders; IUPK continuations of PKP2B use a separate rate scheme and are not covered.",
+    "1. Formula per rezim regulasi (dipilih otomatis dari periode HBA)": "1. Formula by regulatory regime (chosen automatically from the HBA period)",
+    "Formula harga dasar": "Base-price formula",
+    "Jan–Feb 2023": "Jan–Feb 2023",
+    "Mar–Jul 2023": "Mar–Jul 2023",
+    "Sejak Mar 2025": "Since Mar 2025",
+    "Satu kategori: HBA 6.322 GAR, acuan TM 8%, TS 0,8%, Ash 15%": "Single category: HBA 6,322 GAR, reference TM 8%, TS 0.8%, Ash 15%",
+    "Satu kategori: ≤ 5.200 GAR → HBA II (4.200); ≤ 6.000 → HBA I (5.200); di atasnya → HBA": "Single category: ≤ 5,200 GAR → HBA II (4,200); ≤ 6,000 → HBA I (5,200); above → HBA",
+    "Satu kategori: ≤ 3.400 GAR → HBA III; < 5.300 → HBA II (4.100); ≤ 6.000 → HBA I (5.300); di atasnya → HBA": "Single category: ≤ 3,400 GAR → HBA III; < 5,300 → HBA II (4,100); ≤ 6,000 → HBA I (5,300); above → HBA",
+    "Interpolasi kalori antar-kategori HBA": "Calorific interpolation between HBA categories",
+    "Formula satu kategori: HPB = HBA(i) × K(j)/K(i) × (100 − TM(j)) / (100 − TM(i)) [× FKA untuk kalori rendah] − [(TS(j) − TS(i)) × 4 + (Ash(j) − Ash(i)) × 0,4]. i = kategori acuan, j = batubara Anda. Hasil kalkulator diuji terhadap perhitungan HPB per pengapalan tahun 2023 dan cocok sampai US$0,01.": "Single-category formula: HPB = HBA(i) × K(j)/K(i) × (100 − TM(j)) / (100 − TM(i)) [× FKA for low calorific values] − [(TS(j) − TS(i)) × 4 + (Ash(j) − Ash(i)) × 0.4]. i = reference category, j = your coal. The calculator was tested against per-shipment HPB calculations from 2023 and matches to US$0.01.",
+    "Formula sejak Mar 2025: harga dasar = interpolasi linear HBA dua kategori terdekat menurut kalori, contoh GAR 5.800: HBA I + (HBA − HBA I) × (5.800 − 5.300) / (6.322 − 5.300). Di atas 6.322 GAR: HBA × GAR / 6.322; di bawah 3.400 GAR: HBA III × GAR / 3.400. Koreksi kualitas: × (100 − TM) / (100 − TM acuan) − (TS − TS acuan) × 4 − (Ash − Ash acuan) × 0,4, dengan spesifikasi acuan diinterpolasi dari 6.322 GAR (TM 12,26%, TS 0,66%, Ash 7,94%), 5.300 GAR (21,32%; 0,75%; 6,04%), 4.100 GAR (35,73%; 0,23%; 3,90%) dan 3.400 GAR (44,30%; 0,24%; 3,88%).": "Formula since Mar 2025: base price = linear interpolation of the two nearest HBA categories by calorific value, e.g. GAR 5,800: HBA I + (HBA − HBA I) × (5,800 − 5,300) / (6,322 − 5,300). Above 6,322 GAR: HBA × GAR / 6,322; below 3,400 GAR: HBA III × GAR / 3,400. Quality corrections: × (100 − TM) / (100 − reference TM) − (TS − reference TS) × 4 − (Ash − reference Ash) × 0.4, with reference specifications interpolated from 6,322 GAR (TM 12.26%, TS 0.66%, Ash 7.94%), 5,300 GAR (21.32%; 0.75%; 6.04%), 4,100 GAR (35.73%; 0.23%; 3.90%) and 3,400 GAR (44.30%; 0.24%; 3.88%).",
+    "2. Basis kualitas dan periode HBA": "2. Quality basis and HBA period",
+    "Semua parameter berbasis as received (GAR, TM ar, TS ar, Ash ar). Bila COA mencantumkan TS dan Ash dalam adb, pilih basis adb dan isi IM; konversinya X(ar) = X(adb) × (100 − TM) / (100 − IM). Dengan tanggal B/L, periode HBA dipilih otomatis: sejak Mar 2025 Periode I untuk tanggal 1–14 dan Periode II mulai tanggal 15; sebelumnya HBA bulan B/L. Sebagian perhitungan mencari HBA menurut tanggal terbit Kepmen, sehingga pengapalan awal bulan bisa memakai HBA bulan sebelumnya; pilih periode secara manual bila mengikuti praktik tersebut.": "All parameters are on an as-received basis (GAR, TM ar, TS ar, Ash ar). If the COA reports TS and Ash on adb, choose the adb basis and enter IM; the conversion is X(ar) = X(adb) × (100 − TM) / (100 − IM). With a B/L date the HBA period is chosen automatically: since Mar 2025 Period I for days 1–14 and Period II from the 15th; before that the HBA of the B/L month. Some calculations look up HBA by the Kepmen issue date, so early-month shipments can use the previous month’s HBA; select the period manually if you follow that practice.",
+    "3. Royalti": "3. Royalty",
+    "Harga dasar = maks(harga jual, HPB), karena HPB menjadi batas bawah dasar pengenaan royalti. HDP royalti = harga dasar − biaya penyesuaian (barging dan transhipment, masing-masing nilai terkecil antara aktual dan standar), lalu royalti = tonase × HDP × tarif. Tarif mengikuti kelas kalori (≤ 4.200, > 4.200–5.200, > 5.200 GAR), tier HBA (< 70, 70–< 90, ≥ 90 US$/t) dan metode tambang. PP 19/2025 (berlaku 26 Apr 2025) menaikkan tarif open pit tier HBA ≥ 90 untuk kelas ≤ 4.200 (8% → 9%) dan > 4.200–5.200 (10,5% → 11,5%); tarif underground tidak berubah. Struktur ini diuji ulang terhadap perhitungan royalti per pengapalan tahun 2023 dengan hasil identik.": "Base price = max(selling price, HPB), because HPB is the floor of the royalty base. Royalty base (HDP) = base price − adjustment costs (barging and transhipment, each the lower of actual and standard), then royalty = tonnage × HDP × rate. The rate depends on the calorific class (≤ 4,200, > 4,200–5,200, > 5,200 GAR), the HBA tier (< 70, 70–< 90, ≥ 90 US$/t) and the mining method. PP 19/2025 (in force 26 Apr 2025) raised the open-pit rate in the HBA ≥ 90 tier for the ≤ 4,200 class (8% → 9%) and the > 4,200–5,200 class (10.5% → 11.5%); underground rates are unchanged. This structure was re-tested against per-shipment royalty calculations from 2023 with identical results.",
+    "4. Status verifikasi": "4. Verification status",
+    "Formula 41.K/2023 dan 227.K/2023 terverifikasi terhadap perhitungan per pengapalan tahun 2023. Formula interpolasi sejak Mar 2025 cocok dengan tabel HPB riil pada sebagian besar bulan, tetapi teks lampiran Kepmen 72.K/2025 dan 268.K/2025 (diubah 144.K/2026) belum dapat diakses dari portal JDIH ESDM saat dashboard ini dibuat. Batas kategori 6.000 GAR, koefisien koreksi kualitas, acuan HBA untuk tier tarif dan biaya standar perlu dicocokkan dengan teks resmi serta angka e-PNBP. Kalkulator ini adalah alat bantu estimasi, bukan penetapan resmi.": "The 41.K/2023 and 227.K/2023 formulas are verified against per-shipment calculations from 2023. The interpolation formula since Mar 2025 matches real HPB tables in most months, but the annex texts of Kepmen 72.K/2025 and 268.K/2025 (amended by 144.K/2026) could not be accessed from the ESDM JDIH portal when this dashboard was built. The 6,000 GAR category threshold, quality-correction coefficients, the HBA reference for the rate tier and standard costs must be checked against the official text and e-PNBP figures. This calculator is an estimation aid, not an official determination.",
+    "Basis adb memerlukan TM dan IM.": "The adb basis requires TM and IM.",
+    "HBA Periode II bulan ini belum ada di data; dipakai Periode I.": "This month’s HBA Period II is not in the data yet; Period I is used.",
+    "HBA untuk bulan B/L ini belum ada di data dashboard.": "The HBA for this B/L month is not in the dashboard data yet.",
+    "Koreksi TS & Ash tidak dikenakan (kalori rendah dengan TM ≥ 40%)": "No TS & Ash correction (low calorific value with TM ≥ 40%)",
+    "Formula periode ini memasukkan koreksi TM, TS dan Ash; centang koreksi kualitas untuk hasil yang sebanding dengan perhitungan resmi.": "This period’s formula includes TM, TS and Ash corrections; tick quality corrections for a result comparable with the official calculation.",
+    "Tarif royalti sebelum 15 Agu 2022 tidak dicakup kalkulator ini.": "Royalty rates before 15 Aug 2022 are not covered by this calculator.",
+    "Lengkapi kalkulator HPB di atas (periode HBA dan nilai kalor) terlebih dahulu.": "Complete the HPB calculator above (HBA period and calorific value) first.",
+    "Isi tonase pengapalan.": "Enter the shipment tonnage.",
+    "Isi harga jual FOB (USD/t).": "Enter the FOB selling price (USD/t).",
+    "HBA acuan tier tidak tersedia untuk periode ini.": "The tier reference HBA is not available for this period.",
+    "Lengkapi input royalti terlebih dahulu.": "Complete the royalty inputs first.",
+    "Estimasi disimpan ke daftar pengapalan di bawah.": "Estimate saved to the shipment list below.",
+    "Belum ada estimasi yang disimpan.": "No estimates saved yet.",
+    "Harga dasar = maks(harga jual, HPB)": "Base price = max(selling price, HPB)",
+    "Biaya penyesuaian = min(barging aktual, standar) + min(transhipment aktual, standar)": "Adjustment costs = min(actual, standard barging) + min(actual, standard transhipment)",
+    "Harga dasar pengenaan (HDP) royalti per ton": "Royalty base price (HDP) per tonne",
+    "Tarif manual": "Manual rate",
+    "Royalti per ton = HDP × tarif": "Royalty per tonne = HDP × rate",
+    "dasar = HPB (harga jual di bawah HPB)": "base = HPB (selling price below HPB)",
+    "dasar = harga jual": "base = selling price",
+    "Royalti": "Royalty",
+    "Data": "Data",
+    "Rincian perhitungan": "Calculation details",
+    "Hitung royalti →": "Calculate royalty →",
+    "Iuran produksi IUP batubara. Tarif mengikuti tanggal B/L (PP 26/2022 atau PP 19/2025). Input hanya tersimpan di browser ini.": "Production levy for coal IUP holders. The rate follows the B/L date (PP 26/2022 or PP 19/2025). Inputs are stored only in this browser.",
+    "Pengapalan": "Shipment",
+    "Tanggal B/L": "B/L date",
+    "GAR (kcal/kg)": "GAR (kcal/kg)",
+    "Ambil dari kalkulator HPB": "Use HPB calculator result",
+    "Pengaturan lanjutan": "Advanced settings",
+    "Kurs (Rp/US$)": "Exchange rate (Rp/US$)",
+    "opsional": "optional",
+    "Biaya barging & transhipment diisi hanya bila boleh dikurangkan untuk titik serah penjualan Anda (contoh: FOB vessel); dipakai nilai terkecil antara aktual dan standar.": "Enter barging & transhipment costs only if they may be deducted for your point of sale (e.g. FOB vessel); the lower of actual and standard is used.",
+    "Dasar pengenaan per ton": "Royalty base per tonne",
+    "Perbandingan metode tambang": "Mining-method comparison",
+    "Simpan ke daftar": "Save to list",
+    "Daftar pengapalan": "Shipment list",
+    "Metode perhitungan royalti": "Royalty calculation method",
+    "Rumus": "Formula",
+    "Rincian": "Details",
+    "Open pit": "Open pit",
+    "Underground": "Underground",
+    "Estimasi untuk perencanaan, bukan pengganti perhitungan resmi di e-PNBP. Cakupan: pemegang IUP batubara; IUPK kelanjutan PKP2B memakai skema tarif tersendiri dan belum dicakup. Acuan HBA untuk tier tarif, biaya standar dan koefisien HPB perlu dicocokkan dengan teks resmi serta angka e-PNBP.": "An estimate for planning, not a substitute for the official calculation in e-PNBP. Scope: coal IUP holders; IUPK continuations of PKP2B use a separate rate scheme and are not covered. The HBA reference for the rate tier, standard costs and HPB coefficients must be checked against the official text and e-PNBP figures.",
+    "Memuat data HBA…": "Loading HBA data…",
+    "Isi tanggal B/L.": "Enter the B/L date.",
+    "Isi nilai kalor GAR.": "Enter the GAR calorific value.",
+    "Isi HPB atau ambil dari kalkulator HPB.": "Enter HPB or take it from the HPB calculator.",
+    "Belum ada hasil di kalkulator HPB. Hitung dulu di tab Kalkulator HPB.": "No HPB calculator result yet. Calculate it first in the HPB calculator tab.",
+    "Belum ada hasil di kalkulator HPB; isi HPB manual atau hitung di tab Kalkulator HPB.": "No HPB calculator result yet; enter HPB manually or calculate it in the HPB calculator tab.",
+    "Estimasi disimpan ke daftar pengapalan.": "Estimate saved to the shipment list.",
     'Masukkan HPB per bulan (USD/t) untuk spesifikasi produk Anda, atau simpan dari kalkulator. Data tersimpan di perangkat ini dan tampil di kurva tren sebagai "HPB (input)".': 'Enter monthly HPB (USD/t) for your product specification, or save it from the calculator. Data is stored on this device and shown on the trend chart as "HPB (input)".',
   };
   
   // pola untuk teks dinamis (diterapkan pada teks asli berformat Indonesia; angka dikonversi sesudahnya)
   const REGEX = [
+    [/^Tarif (PP \d+\/\d{4})$/, 'Rate $1'],
+    [/^Royalti = (.+) t × royalti per ton \(USD\)$/, 'Royalty = $1 t × royalty per tonne (USD)'],
+    [/^Royalti dalam Rupiah \(kurs (.+)\)$/, 'Royalty in Rupiah (rate $1)'],
+    [/^Total (\d+) pengapalan: (.+) t, royalti (.+)\.$/, (m, n, q, u) => `Total ${n} shipment${n === '1' ? '' : 's'}: ${q} t, royalty ${u}.`],
     [/^(\d+) baris diimpor(?:, (\d+) baris dilewati(?: \(format tidak dikenali\))?)?\.$/, (m, a, b) => `${a} row${a === '1' ? '' : 's'} imported${b ? `, ${b} row${b === '1' ? '' : 's'} skipped${m.includes('format') ? ' (unrecognised format)' : ''}` : ''}.`],
     [/^(\d+) bulan penjualan: rata-rata (harga aktual|selling price) /, (m, n, w) => `${n} sales month${n === '1' ? '' : 's'}: average ${w === 'harga aktual' ? 'actual price' : 'selling price'} `],
     [/^(\d+) bln penjualan \(/, (m, n) => `${n} sales month${n === '1' ? '' : 's'} (`],
@@ -1863,6 +2407,20 @@ window.engine = engine;
     [/Selling price GAR ~(\S+) rata-rata di (bawah|atas) ICI 2 sebesar /, (m, g, w) => `Selling price GAR ~${g} averaged ${w === 'bawah' ? 'below' : 'above'} ICI 2 by `],
   ];
   const PHRASES = [
+    ['HBA Periode II bulan ini belum ada di data; dipakai Periode I.', 'This month’s HBA Period II is not in the data yet; Period I is used.'],
+    ['Kalkulator HPB: ', 'HPB calculator: '], ['Selisih ', 'Difference '], [' untuk pengapalan ini.', ' for this shipment.'], ['Tanggal B/L ', 'B/L date '],
+    ['HBA utama', 'main HBA'], ['HBA kategori', 'category HBA'], ['dengan biaya', 'with costs'], ['tanpa biaya', 'no costs'], ['kurs ', 'rate '], ['tarif manual', 'manual rate'],
+    ['Formula sebelum Kepmen 41.K/2023', 'Formula before Kepmen 41.K/2023'],
+    [' · interpolasi kalori antar-kategori HBA', ' · calorific interpolation between HBA categories'],
+    [' · satu kategori HBA', ' · single HBA category'],
+    [' (acuan ', ' (reference '], ['Faktor FKA (kalori ≤ ', 'FKA factor (calorific value ≤ '],
+    ['isi kurs untuk nilai Rupiah', 'enter an exchange rate for the Rupiah value'],
+    ['tarif manual (tabel: ', 'manual rate (table: '],
+    ['Perbandingan metode tambang (tarif tabel): ', 'Mining-method comparison (table rates): '], [' · selisih ', ' · difference '],
+    ['Tanggal acuan ', 'Reference date '], [', dari kalkulator', ', from calculator'], [', input manual', ', manual input'],
+    ['Acuan tier: ', 'Tier reference: '], ['; kelas ', '; class '],
+    ['Biaya standar belum diisi; biaya aktual dipakai penuh.', 'Standard costs not entered; actual costs are used in full.'],
+    ['Acuan tier kategori kalori belum terkonfirmasi; praktik umum memakai HBA utama 6.322.', 'The calorific-category tier reference is unconfirmed; common practice uses the main HBA 6.322.'],
     ['(−', '(−'],
     [' dari bulan sebelumnya)', ' vs previous month)'],
     ['Skenario dasar HBA 12 bulan:', 'HBA 12-month base case:'],
@@ -2006,7 +2564,7 @@ window.engine = engine;
     applyAll();
   };
   const _confirm = window.confirm.bind(window);
-  const CONF = { 'Hapus semua harga aktual yang tersimpan di browser ini?': 'Delete all actual prices stored in this browser?', 'Hapus semua HPB yang tersimpan di browser ini?': 'Delete all HPB values stored in this browser?' };
+  const CONF = { 'Hapus semua harga aktual yang tersimpan di browser ini?': 'Delete all actual prices stored in this browser?', 'Hapus semua HPB yang tersimpan di browser ini?': 'Delete all HPB values stored in this browser?', 'Hapus semua estimasi royalti yang tersimpan di browser ini?': 'Delete all royalty estimates stored in this browser?' };
   window.confirm = (m) => _confirm(lang === 'en' && CONF[m] ? CONF[m] : m);
   window.__i18n = { get lang() { return lang; }, tr };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
