@@ -8,7 +8,8 @@ Semuanya ada dalam satu file `index.html`, tanpa server dan tanpa database.
 
 - **Tren & perbandingan**: filter *Time from / Time to (mm/yy)*, pilih seri HBA, HBA I–III, dan ICI 1–5, input harga jual aktual perusahaan (manual atau tempel/impor CSV), serta tabel selisih dan rasio terhadap benchmark.
 - **Price simulation**: skenario Bearish / Base / Bullish, slider faktor penentu (impor China dan India, pasokan Indonesia, LNG JKM, freight, cuaca), pita ketidakpastian 80%, dan tabel validasi model (backtest).
-- **Kalkulator HPB**: hitung Harga Patokan Batubara dari GAR, TM, TS dan Ash berdasarkan HBA periode terpilih (interpolasi kalori antar-kategori HBA, koreksi kualitas opsional), lalu simpan hasilnya ke kurva. HPB perusahaan juga bisa diinput manual per bulan.
+- **Kalkulator HPB**: hitung Harga Patokan Batubara dari GAR, TM, TS dan Ash (basis ar, atau adb + IM yang dikonversi otomatis). Formula dipilih otomatis sesuai rezim periode HBA: Kepmen 41.K/2023 dan 227.K/2023 (satu kategori HBA) sampai Feb 2025, interpolasi kalori antar-kategori sejak Mar 2025 (Kepmen 72.K/2025 jo. 268.K/2025). Isi tanggal B/L untuk memilih periode HBA (Periode I/II) otomatis. HPB perusahaan juga bisa diinput manual per bulan.
+- **Royalti** (tab tersendiri): royalti = tonase × [maks(harga jual, HPB) − biaya barging/transhipment yang diakui] × tarif. Tarif otomatis menurut tanggal B/L (PP 26/2022 atau PP 19/2025), kelas kalori, tier HBA dan **metode tambang (open pit / underground)** yang dipilih pengguna; hasil dan perbandingan kedua metode tampil berdampingan dengan input (di HP muncul bilah ringkas di bawah layar), dengan daftar pengapalan dan ekspor CSV. Dari tab Kalkulator HPB, tombol **Hitung royalti →** membawa HPB, GAR dan tanggal B/L langsung ke tab Royalti.
 - **Data & sumber**: tabel HBA per periode Kepmen, ICI dari sumber yang sudah dipublikasikan terbuka, dan indikator konteks pasar beserta sumbernya.
 
 ## Bahasa / Language
@@ -23,7 +24,8 @@ Harga jual aktual dan HPB yang dimasukkan **hanya disimpan di browser perangkat 
 - Isi harga lewat kartu **Input harga jual aktual perusahaan** di tab *Tren & perbandingan* (bulan mm/yy, harga, volume, GAR), atau tempel/impor banyak baris sekaligus dalam format `mm/yy,harga,volume,gar`.
 - Gunakan **Ekspor CSV** untuk cadangan atau memindahkan data ke perangkat lain.
 - Data ICI di situs ini hanya berasal dari sumber yang sudah dipublikasikan terbuka (lihat kolom Sumber di tab *Data & sumber*); data ICI berlangganan dan HPB internal tidak dimuat.
-- Kalkulator HPB adalah alat bantu estimasi. Koefisien koreksi kualitas perlu dicocokkan dengan lampiran Kepmen ESDM 72.K/MB.01/MEM.B/2025 (diubah 268.K/MB.01/MEM.B/2025) sebelum dipakai untuk royalti atau kontrak.
+- Estimasi royalti dan daftar pengapalan juga hanya tersimpan di browser masing-masing.
+- Kalkulator HPB dan royalti adalah alat bantu estimasi, bukan pengganti perhitungan e-PNBP. Koefisien koreksi kualitas perlu dicocokkan dengan lampiran Kepmen ESDM 72.K/MB.01/MEM.B/2025 (diubah 268.K/MB.01/MEM.B/2025) sebelum dipakai untuk royalti atau kontrak. Acuan HBA untuk tier tarif royalti (HBA utama atau HBA kategori) juga perlu dikonfirmasi.
 
 ## Memperbarui data HBA
 
