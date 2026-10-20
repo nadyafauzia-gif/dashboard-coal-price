@@ -69,6 +69,10 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
 .cx-tab { font: inherit; font-size: 13px; font-weight: 500; background: none; border: 0; padding: 7px 14px; border-radius: var(--cx-r-sm); color: var(--color-fg-muted); cursor: pointer; transition: background .15s, color .15s; }
 .cx-tab:hover { color: var(--color-fg); }
 .cx-tab[aria-selected="true"] { background: var(--color-fg); color: var(--color-bg); }
+.cx-topr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cx-lang { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--cx-line); border-radius: var(--cx-r-sm); background: var(--cx-surface); }
+.cx-lang button { font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .02em; border: 0; background: none; color: var(--color-fg-muted); padding: 6px 10px; border-radius: var(--cx-r-sm); cursor: pointer; }
+.cx-lang button[aria-pressed="true"] { background: var(--cx-accent); color: #fff; }
 /* header */
 .cx-head { margin: 8px 0 22px; }
 .cx-head h1 { font-family: var(--font-anthropic-sans); font-weight: 600; font-size: clamp(22px, 3vw, 30px); line-height: 1.15; letter-spacing: -0.025em; margin: 0 0 8px; max-width: 30ch; }
@@ -152,8 +156,12 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
 .cx-method h3 { font-size: 14px; font-weight: 600; margin: 18px 0 4px; }
 @media (max-width: 640px) {
   .cx-top { flex-direction: column; align-items: stretch; }
-  .cx-tabs { justify-content: space-between; }
-  .cx-tab { flex: 1 1 auto; padding: 7px 8px; }
+  .cx-top { position: relative; }
+  .cx-topr { width: 100%; }
+  .cx-lang { position: absolute; top: 0; right: 0; }
+  .cx-topr .cx-tabs { flex: 1 1 100%; flex-wrap: nowrap; }
+  .cx-tab { font-size: 12px; padding: 7px 4px; white-space: nowrap; }
+  .cx-tab { flex: 1 1 auto; }
   .cx-card { padding: 18px 16px; }
   .cx-kpis { grid-template-columns: 1fr 1fr; }
   .cx-kpis > .cx-kpi { box-shadow: inset 1px 1px 0 var(--cx-line); padding: 14px 14px 12px; }
@@ -169,12 +177,15 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
       <svg class="cx-mark" viewBox="0 0 28 28" aria-hidden="true"><path d="M2 20h24M2 14.5h24M2 9h24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M5 20l6-5.5 5 3 7-9" fill="none" stroke="var(--cx-accent, currentColor)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Harga Batubara</span>
     </div>
+    <div class="cx-topr">
+    <div class="cx-lang" role="group" aria-label="Bahasa"><button type="button" data-lang="id" aria-pressed="true">ID</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
     <nav class="cx-tabs" role="tablist" aria-label="Halaman">
       <button class="cx-tab" role="tab" id="tab-trend" data-page="trend" aria-selected="true">Tren</button>
       <button class="cx-tab" role="tab" id="tab-sim" data-page="sim" aria-selected="false">Simulasi</button>
       <button class="cx-tab" role="tab" id="tab-hpb" data-page="hpb" aria-selected="false">Kalkulator HPB</button>
       <button class="cx-tab" role="tab" id="tab-data" data-page="data" aria-selected="false">Data &amp; sumber</button>
     </nav>
+    </div>
   </div>
 
   <header class="cx-head" id="top">
@@ -423,16 +434,6 @@ body { padding: 20px 20px 48px; font-family: var(--font-anthropic-sans); }
         </table>
       </div>
     </div>
-    <div class="cx-card" id="ship-card" style="margin-bottom: var(--cds-gap-md)">
-      <h2>Riwayat penjualan per pengapalan (2023–2026)</h2>
-      <p class="cx-note" id="ship-note"></p>
-      <div class="cx-tbl-wrap">
-        <table id="ship-table" data-source="shipments" data-row-key="key">
-          <thead><tr><th data-field="bl_date">Tgl B/L</th><th data-field="pricing_month">Bulan analisis</th><th data-field="vessel">Kapal</th><th data-field="entity">Entitas</th><th data-field="destination">Tujuan</th><th class="n" data-field="gar">GAR</th><th class="n" data-field="selling_price">Harga kontrak</th><th class="n" data-field="actual_price">Harga aktual</th><th class="n" data-field="volume_t">Volume (t)</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
     <div class="cx-card" id="periods-card" style="margin-bottom: var(--cds-gap-md)">
       <h2>HBA per periode penetapan</h2>
       <p class="cx-note">USD/ton. Kosong = nilai tidak ditemukan pada sumber publik yang dapat diverifikasi (HBA I–III Jan–Jul 2023 memakai spesifikasi lama).</p>
@@ -541,7 +542,7 @@ dash.calc('kpi', {
 
 dash.calc('spread_summary', {
   title: 'Selisih harga jual vs benchmark',
-  description: 'Metode sheet Monthly Price Analysis: selling price dikurangi ICI 2 dan HPB 5.800 acuan pada bulan penjualan yang sama; rata-rata sederhana dan tertimbang volume.',
+  description: 'Selling price dikurangi ICI 2 dan HPB 5.800 acuan pada bulan penjualan yang sama; rata-rata sederhana dan tertimbang volume.',
   inputs: ['actual_monthly'],
   fn: (actual_monthly) => [['ici2', 'ici_ref'], ['hpb5800', 'hpb_ref']].map(([metric, ref]) => {
     const rows = actual_monthly.filter((a) => a[ref] != null && a[ref] !== '' && a.selling_price != null);
@@ -1254,7 +1255,7 @@ window.engine = engine;
     if (s1) {
       ks.textContent = (s1.avg >= 0 ? '+' : '−') + 'US$' + f2(Math.abs(s1.avg));
       ksc.className = 'chg cx-flat';
-      ksc.textContent = `${s1.n} bln penjualan (${mmyy(s1.from)}–${mmyy(s1.to)})${s1.usedRef ? ', metode Monthly Price Analysis' : ', vs ICI 2 bulan yang sama'}${s2 ? ` · vs HPB 5.800: ${s2.avg >= 0 ? '+' : '−'}${f2(Math.abs(s2.avg))}` : ''}`;
+      ksc.textContent = `${s1.n} bln penjualan (${mmyy(s1.from)}–${mmyy(s1.to)})${s1.usedRef ? ', metode perusahaan' : ', vs ICI 2 bulan yang sama'}${s2 ? ` · vs HPB 5.800: ${s2.avg >= 0 ? '+' : '−'}${f2(Math.abs(s2.avg))}` : ''}`;
     } else { ks.textContent = '—'; ksc.className = 'chg cx-flat'; ksc.textContent = actualRows().length ? 'Tidak ada bulan penjualan dengan data ICI 2' : 'Belum ada data penjualan'; }
 
     /* actual table + csv */
@@ -1262,7 +1263,7 @@ window.engine = engine;
     const tb = document.querySelector('#act-table tbody');
     tb.replaceChildren(...act.slice().reverse().map((r) => {
       const tr = document.createElement('tr');
-      [mmyy(r.ym), byIdMeta[r.series].label.replace('Aktual ', ''), f2(r.price), r.volume_t != null && !isNaN(r.volume_t) ? int(r.volume_t) : '', r.gar != null && !isNaN(r.gar) ? int(r.gar) : '', r.src === 'file' ? 'File perusahaan' : 'Input'].forEach((v, i) => {
+      [mmyy(r.ym), byIdMeta[r.series].label.replace('Aktual ', ''), f2(r.price), r.volume_t != null && !isNaN(r.volume_t) ? int(r.volume_t) : '', r.gar != null && !isNaN(r.gar) ? int(r.gar) : '', r.src === 'file' ? 'File' : 'Input'].forEach((v, i) => {
         const td = document.createElement('td'); if (i >= 2 && i <= 4) td.className = 'n'; td.textContent = v; tr.append(td); });
       const tdD = document.createElement('td');
       if (r.src !== 'file') { const b = document.createElement('button'); b.className = 'cx-btn'; b.dataset.del = r.ym + '|' + r.series; b.textContent = 'Hapus'; tdD.append(b); }
@@ -1553,7 +1554,7 @@ window.engine = engine;
   const drawData = () => {
     fillTable('notes-table', 'data_notes', ['topic', 'detail', 'status'], {}, 'key');
     const nShip = fillTable('ship-table', 'shipments', ['bl_date', 'pricing_month', 'vessel', 'entity', 'destination', 'gar', 'selling_price', 'actual_price', 'volume_t'], { gar: int, selling_price: f2, actual_price: f2, volume_t: int }, 'key');
-    document.getElementById('ship-card').hidden = nShip === 0;
+    if (document.getElementById('ship-card')) document.getElementById('ship-card').hidden = nShip === 0;
     fillTable('per-table', 'hba_periods', ['label', 'hba', 'hba1', 'hba2', 'hba3', 'src'], { hba: f2, hba1: f2, hba2: f2, hba3: f2 });
     fillTable('ici-table', 'ici_monthly', ['ym', 'ici1', 'ici2', 'ici3', 'ici4', 'ici5', 'kind', 'src'], { ici1: f2, ici2: f2, ici3: f2, ici4: f2, ici5: f2 });
     fillTable('hpb-table', 'hpb_monthly', ['ym', 'hpb5800', 'hpb6500', 'src'], { hpb5800: f2, hpb6500: f2 });
@@ -1599,6 +1600,416 @@ window.engine = engine;
   dash.onData(draw);
   const named = location.hash.slice(1);
   if (['trend', 'sim', 'hpb', 'data'].includes(named)) showPage(named);
+})();
+</script>
+
+<script>
+/* Lapisan bahasa ID / EN.
+   Teks ditulis dalam bahasa Indonesia; dalam mode EN setiap teks yang tampil diterjemahkan
+   (kalimat utuh → kamus EXACT, teks dinamis → pola REGEX + PHRASES), lalu format angka
+   (122,52 → 122.52; 6.322 → 6,322) dan singkatan bulan (Okt → Oct) disesuaikan. */
+(() => {
+  const EXACT = {
+    'Harga Batubara': 'Coal Prices',
+    'Tren': 'Trends',
+    'Simulasi': 'Simulation',
+    'Kalkulator HPB': 'HPB calculator',
+    'Data & sumber': 'Data & sources',
+    'Dashboard harga batubara — HBA, ICI, HPB & harga jual aktual': 'Coal price dashboard — HBA, ICI, HPB & actual selling prices',
+    'Dashboard harga batubara — HBA, ICI & harga jual aktual': 'Coal price dashboard — HBA, ICI & actual selling prices',
+    '@Halaman': 'Pages',
+    '@Bahasa': 'Language',
+    'Time from (mm/yy)': 'Time from (mm/yy)',
+    'Time to (mm/yy)': 'Time to (mm/yy)',
+    '12 bln terakhir': 'Last 12 months',
+    '24 bln terakhir': 'Last 24 months',
+    'Sejak 2024': 'Since 2024',
+    'Semua (2023–2026)': 'All (2023–2026)',
+    'HBA 6.322 GAR · bulan terakhir': 'HBA 6,322 GAR · latest month',
+    'HBA I 5.300 GAR · bulan terakhir': 'HBA I 5,300 GAR · latest month',
+    'HBA II 4.100 GAR · bulan terakhir': 'HBA II 4,100 GAR · latest month',
+    'ICI 2 (5.800 GAR) · data terbaru': 'ICI 2 (5,800 GAR) · latest data',
+    'Harga aktual GAR ~5.800 · penjualan terakhir': 'Actual price GAR ~5,800 · latest sale',
+    'Rata-rata selisih harga jual vs ICI 2': 'Average selling-price spread vs ICI 2',
+    'Belum ada data penjualan': 'No sales data yet',
+    'Tidak ada bulan penjualan dengan data ICI 2': 'No sales months with ICI 2 data',
+    'Isi di kartu input harga jual': 'Enter prices in the selling-price card',
+    'Belum ada data': 'No data yet',
+    'Tren harga bulanan (USD/ton, FOB)': 'Monthly price trend (USD/ton, FOB)',
+    'HBA bulanan = rata-rata periode I & II sejak Mar 2025. Garis putus-putus = ICI, titik-titik = HPB yang Anda input/hitung, hitam = harga jual aktual yang Anda input.': 'Monthly HBA = average of periods I & II since Mar 2025. Dashed = ICI, dotted = HPB you entered or calculated, black = actual selling prices you entered.',
+    'Garis vertikal Sep 2023: HBA mulai ditetapkan dengan 4 kategori kalori (6.322/5.300/4.100/3.400 GAR). Jan–Agu 2023 memakai formula sebelumnya sehingga tidak sebanding langsung.': 'Vertical line Sep 2023: HBA has been set for 4 calorific categories (6,322/5,300/4,100/3,400 GAR) since then. Jan–Aug 2023 used the previous formula and is not directly comparable.',
+    'Formula 4 kategori': '4-category formula',
+    'Input harga jual aktual perusahaan': 'Company actual selling prices',
+    'hanya di browser perangkat ini': 'only in this device’s browser',
+    'Bulan (mm/yy)': 'Month (mm/yy)',
+    'Harga (USD/t)': 'Price (USD/t)',
+    'Volume (ton)': 'Volume (t)',
+    'Volume (t)': 'Volume (t)',
+    'Tambah / perbarui': 'Add / update',
+    'Tempel banyak baris (CSV)': 'Paste multiple rows (CSV)',
+    'Bulan': 'Month',
+    'Harga': 'Price',
+    'Volume': 'Volume',
+    'GAR': 'GAR',
+    'Asal': 'Source',
+    'Hapus': 'Delete',
+    'Input': 'Input',
+    'Kalkulator': 'Calculator',
+    'File perusahaan': 'Company file',
+    'Tambahan': 'Added',
+    'Ekspor CSV (cadangan / pindah perangkat)': 'Export CSV (backup / move to another device)',
+    'Ekspor CSV': 'Export CSV',
+    'Salin': 'Copy',
+    'Unduh CSV': 'Download CSV',
+    '@Bulan mm/yy': 'Month mm/yy',
+    '@Tempel CSV': 'Paste CSV',
+    '@CSV ekspor': 'Export CSV',
+    '@Tempel HPB': 'Paste HPB',
+    '@Time from': 'Time from',
+    '@Time to': 'Time to',
+    'Format bulan harus mm/yy, misalnya 09/26.': 'Month must be mm/yy, for example 09/26.',
+    'Harga harus angka lebih dari 0.': 'Price must be a number greater than 0.',
+    'HPB harus angka lebih dari 0.': 'HPB must be a number greater than 0.',
+    'Aktual vs benchmark': 'Actual vs benchmark',
+    'Selisih harga terhadap benchmark pada rentang waktu di atas. Pilih benchmark yang kalorinya paling dekat dengan produk Anda (GAR ~5.800: ICI 2 bila tersedia, atau HBA I 5.300 sebagai acuan resmi terdekat).': 'Price spread against a benchmark over the time range above. Choose the benchmark closest in calorific value to your product (GAR ~5,800: ICI 2 where available, or HBA I 5,300 as the nearest official reference).',
+    'Selisih': 'Spread',
+    'Rasio': 'Ratio',
+    'Acuan': 'Reference',
+    'Seri historis': 'Historical series',
+    'Seri historis (mingguan/parsial)': 'Historical series (weekly/partial)',
+    'Acuan perusahaan': 'Company reference',
+    'Belum ada data harga aktual.': 'No actual price data yet.',
+    'Tidak ada data pada rentang ini.': 'No data in this range.',
+    'Belum ada data pada rentang ini.': 'No data in this range yet.',
+    'Tidak ada bulan penjualan yang punya nilai benchmark terpilih pada rentang ini.': 'No sales month in this range has a value for the selected benchmark.',
+    'Tidak ada bulan penjualan yang juga punya nilai benchmark terpilih. Pilih benchmark lain.': 'No sales month also has a value for the selected benchmark. Choose another benchmark.',
+    'Seri yang disimulasikan': 'Series to simulate',
+    'Horizon': 'Horizon',
+    '3 bulan': '3 months',
+    '6 bulan': '6 months',
+    '1 tahun': '1 year',
+    'Benchmark acuan aktual': 'Benchmark for actual price',
+    'Bearish': 'Bearish',
+    'Base': 'Base',
+    'Bullish': 'Bullish',
+    'Kustom (pengaturan Anda)': 'Custom (your settings)',
+    'Jalur harga proyeksi': 'Projected price path',
+    'Riwayat 24 bulan terakhir, tiga skenario, dan pita ketidakpastian 80% di sekitar skenario dasar.': 'Last 24 months of history, three scenarios, and an 80% uncertainty band around the base case.',
+    'Faktor penentu (skenario kustom)': 'Price drivers (custom scenario)',
+    'Geser untuk mengatur kejutan setiap faktor relatif terhadap ekspektasi pasar saat ini. Tombol preset mengisi nilai skenario.': 'Drag to set a shock for each driver relative to current market expectations. The preset buttons fill in scenario values.',
+    'Isi Bearish': 'Fill Bearish',
+    'Isi Base': 'Fill Base',
+    'Isi Bullish': 'Fill Bullish',
+    'Ringkasan proyeksi bulan ke-3, ke-6, ke-12': 'Projection summary at months 3, 6 and 12',
+    'USD/ton. Rentang = pita 80% skenario pada bulan ke-12.': 'USD/ton. Range = 80% scenario band at month 12.',
+    'Skenario': 'Scenario',
+    'Bln ke-3': 'Month 3',
+    'Bln ke-6': 'Month 6',
+    'Bln ke-12': 'Month 12',
+    'Bawah 80%': 'Low 80%',
+    'Atas 80%': 'High 80%',
+    'Validasi model (backtest expanding window)': 'Model validation (expanding-window backtest)',
+    'Error out-of-sample; bobot ensemble = 1/RMSE² per horizon.': 'Out-of-sample error; ensemble weight = 1/RMSE² per horizon.',
+    'Model': 'Model',
+    'n uji': 'n tests',
+    'MAE': 'MAE',
+    'RMSE': 'RMSE',
+    'Arah benar': 'Direction correct',
+    'Bobot': 'Weight',
+    'Naive (baseline)': 'Naive (baseline)',
+    'AR(1) log': 'AR(1) log',
+    'Rata-rata 12 bln': '12-month average',
+    'Variabel pasar & asumsi skenario': 'Market variables & scenario assumptions',
+    'Elastisitas = % perubahan harga per 1% kejutan faktor (asumsi analis, bukan hasil estimasi statistik — data faktor bulanan yang konsisten tidak tersedia publik). Jeda = bulan hingga efek penuh.': 'Elasticity = % price change per 1% driver shock (analyst assumption, not a statistical estimate — consistent monthly driver data is not publicly available). Lag = months to full effect.',
+    'Faktor': 'Driver',
+    'Kelompok': 'Group',
+    'Pengaruh': 'Effect',
+    'Elastisitas': 'Elasticity',
+    'Jeda (bln)': 'Lag (months)',
+    'Dasar': 'Basis',
+    'Sumber': 'Source',
+    'Metodologi & keterbatasan': 'Methodology & limitations',
+    '1. Data & benchmark': '1. Data & benchmarks',
+    '2. Model statistik': '2. Statistical models',
+    '3. Lapisan fundamental & skenario': '3. Fundamental layer & scenarios',
+    '4. Ketidakpastian': '4. Uncertainty',
+    '5. Harga aktual perusahaan': '5. Company actual price',
+    'Simulasi dijalankan pada seri yang punya minimal 24 titik bulanan: HBA dan HBA I–III (ICI tidak disimulasikan karena data publiknya kurang dari 24 bulan berturut-turut). Newcastle 6.000 NAR (benchmark pada brief) tidak tersedia sebagai seri historis publik yang bebas, sehingga dipakai sebagai jangkar pasar melalui kurva futures ICE (Okt 2026–Okt 2027). HBA = harga acuan pemerintah berbasis realisasi penjualan (bobot 70% bulan sebelumnya, 30% dua bulan sebelumnya), ditetapkan per dua minggu sejak Mar 2025; ICI = penilaian pasar mingguan Argus/Coalindo FOB Kalimantan.': 'Simulations run on series with at least 24 monthly points: HBA and HBA I–III (ICI is not simulated because its public data has fewer than 24 consecutive months). Newcastle 6,000 NAR (the benchmark in the brief) is not available as a free public historical series, so it serves as a market anchor through the ICE futures curve (Oct 2026–Oct 2027). HBA = Indonesia’s government reference price based on realised sales (70% previous month, 30% two months earlier), set every two weeks since Mar 2025; ICI = Argus/Coalindo weekly market assessment, FOB Kalimantan.',
+    'Tiga model dibandingkan: naive (harga terakhir), AR(1) pada log harga (mean-reverting), dan rata-rata 12 bulan. Backtest expanding window tanpa data masa depan; bobot ensemble = 1/RMSE². ARIMAX dan XGBoost tidak dipakai: dengan ±30–38 titik bulanan, model tersebut cenderung overfit dan variabel eksternal bulanan yang konsisten tidak tersedia publik.': 'Three models are compared: naive (last price), AR(1) on log prices (mean-reverting) and a 12-month average. Expanding-window backtest with no future data; ensemble weight = 1/RMSE². ARIMAX and XGBoost are not used: with ±30–38 monthly points they tend to overfit, and consistent monthly external variables are not publicly available.',
+    'Harga skenario = ensemble statistik × (1 + 0,5 × perubahan kurva forward Newcastle) × (1 + Σ elastisitas × kejutan faktor × min(1, bulan/jeda)). Base = tanpa kejutan; Bearish/Bullish memakai nilai pada tabel faktor.': 'Scenario price = statistical ensemble × (1 + 0.5 × change in the Newcastle forward curve) × (1 + Σ elasticity × driver shock × min(1, month/lag)). Base = no shocks; Bearish/Bullish use the values in the driver table.',
+    'Pita 80% = ±1,28 × volatilitas bulanan log-return × √bulan. Risiko perubahan struktural: revisi RKAB, operasional penuh eksportir DSI, kebijakan bea keluar, dan krisis gas Timur Tengah dapat menggeser harga di luar pita.': '80% band = ±1.28 × monthly log-return volatility × √months. Structural-change risks — RKAB revisions, the state exporter DSI becoming fully operational, an export duty, and the Middle East gas crisis — can push prices outside the band.',
+    'Penjualan perusahaan tidak terjadi setiap bulan, sehingga tidak dimodelkan langsung. Proyeksi harga aktual = jalur benchmark terpilih × rasio rata-rata aktual/benchmark pada maksimal 6 bulan penjualan terakhir yang tumpang-tindih.': 'Company sales do not happen every month, so they are not modelled directly. Projected actual price = selected benchmark path × the average actual/benchmark ratio over up to the last 6 overlapping sales months.',
+    'Kalkulator Harga Patokan Batubara (HPB)': 'Coal benchmark price (HPB) calculator',
+    'Hitung HPB dari kualitas batubara dan HBA periode terpilih. Hasilnya bisa disimpan sebagai titik HPB di kurva tren.': 'Calculate HPB from coal quality and the HBA of a selected period. You can save the result as an HPB point on the trend chart.',
+    'Periode HBA': 'HBA period',
+    'Simpan ke bulan (mm/yy)': 'Save to month (mm/yy)',
+    'Nilai kalor GAR (kcal/kg)': 'Calorific value GAR (kcal/kg)',
+    'Total moisture ar (%)': 'Total moisture ar (%)',
+    'Total sulphur ar (%)': 'Total sulphur ar (%)',
+    'Ash ar (%)': 'Ash ar (%)',
+    'Terapkan koreksi kualitas (TM, TS, Ash) terhadap spesifikasi acuan HBA': 'Apply quality corrections (TM, TS, Ash) against the HBA reference specification',
+    'Koefisien koreksi (dapat disesuaikan dengan lampiran Kepmen)': 'Correction coefficients (adjust to match the Kepmen annex)',
+    'US$/t per 1% TS': 'US$/t per 1% TS',
+    'US$/t per 1% Ash': 'US$/t per 1% Ash',
+    'HPB hasil perhitungan': 'Calculated HPB',
+    'Langkah': 'Step',
+    'Nilai': 'Value',
+    'HPB': 'HPB',
+    'Simpan ke kurva sebagai HPB': 'Save to chart as HPB',
+    'Isi nilai kalor GAR': 'Enter the GAR calorific value',
+    'HBA kategori ini tidak tersedia untuk periode terpilih': 'This HBA category is not available for the selected period',
+    'Isi bulan tujuan (mm/yy).': 'Enter the target month (mm/yy).',
+    'Lengkapi input kalkulator.': 'Complete the calculator inputs.',
+    'Periode sebelum Maret 2025 memakai formula HPB lama (berbasis satu kategori HBA); hasil interpolasi ini hanya pendekatan.': 'Periods before March 2025 used the old HPB formula (based on a single HBA category); this interpolation is only an approximation.',
+    'HPB perusahaan': 'Company HPB',
+    'HPB (USD/t)': 'HPB (USD/t)',
+    'HPB (input)': 'HPB (input)',
+    'Metode perhitungan HPB': 'HPB calculation method',
+    '1. Harga dasar dari HBA (berlaku sejak Maret 2025)': '1. Base price from HBA (in force since March 2025)',
+    '2. Koreksi kualitas (opsional)': '2. Quality corrections (optional)',
+    '3. Status verifikasi': '3. Verification status',
+    'HBA ditetapkan untuk empat kesetaraan kalori: HBA (6.322 GAR), HBA I (5.300), HBA II (4.100) dan HBA III (3.400). Untuk kalori di antara dua kategori, harga dasar = interpolasi linear kedua HBA menurut kalori, contoh GAR 5.800: HBA I + (HBA − HBA I) × (5.800 − 5.300) / (6.322 − 5.300). Di atas 6.322 GAR: HBA × GAR / 6.322; di bawah 3.400 GAR: HBA III × GAR / 3.400.': 'HBA is set for four calorific equivalents: HBA (6,322 GAR), HBA I (5,300), HBA II (4,100) and HBA III (3,400). For a calorific value between two categories, base price = linear interpolation of the two HBAs by calorific value, e.g. GAR 5,800: HBA I + (HBA − HBA I) × (5,800 − 5,300) / (6,322 − 5,300). Above 6,322 GAR: HBA × GAR / 6,322; below 3,400 GAR: HBA III × GAR / 3,400.',
+    'Harga dasar × (100 − TM) / (100 − TM acuan) − (TS − TS acuan) × koefisien TS − (Ash − Ash acuan) × koefisien Ash. Spesifikasi acuan diinterpolasi dari spesifikasi resmi tiap kategori HBA: 6.322 GAR (TM 12,26%, TS 0,66%, Ash 7,94%), 5.300 GAR (21,32%; 0,75%; 6,04%), 4.100 GAR (35,73%; 0,23%; 3,90%), 3.400 GAR (44,30%; 0,24%; 3,88%). Koefisien default (4 dan 0,4) mengikuti struktur formula HPB sebelumnya.': 'Base price × (100 − TM) / (100 − reference TM) − (TS − reference TS) × TS coefficient − (Ash − reference Ash) × Ash coefficient. Reference specifications are interpolated from the official specification of each HBA category: 6,322 GAR (TM 12.26%, TS 0.66%, Ash 7.94%), 5,300 GAR (21.32%; 0.75%; 6.04%), 4,100 GAR (35.73%; 0.23%; 3.90%), 3,400 GAR (44.30%; 0.24%; 3.88%). Default coefficients (4 and 0.4) follow the structure of the previous HPB formula.',
+    'Struktur harga dasar diuji ulang terhadap tabel HPB riil (Mar 2025–Sep 2026) dan cocok dalam ±0,3% pada sebagian besar bulan. Teks lampiran Kepmen ESDM 72.K/MB.01/MEM.B/2025 (diubah dengan 268.K/MB.01/MEM.B/2025) belum dapat diakses dari portal JDIH ESDM saat dashboard ini dibuat, sehingga koefisien koreksi kualitas perlu dicocokkan dengan lampiran resmi sebelum dipakai untuk perhitungan royalti atau kontrak. Kalkulator ini adalah alat bantu estimasi, bukan penetapan resmi.': 'The base-price structure was back-tested against real HPB tables (Mar 2025–Sep 2026) and matches within ±0.3% in most months. The annex of Kepmen ESDM 72.K/MB.01/MEM.B/2025 (amended by 268.K/MB.01/MEM.B/2025) could not be accessed from the ESDM JDIH portal when this dashboard was built, so the quality-correction coefficients must be checked against the official annex before use for royalty or contract calculations. This calculator is an estimation aid, not an official determination.',
+    'Cakupan dan sumber data di situs ini.': 'Coverage and sources of the data on this site.',
+    'Topik': 'Topic',
+    'Rincian': 'Details',
+    'Status': 'Status',
+    'Info': 'Info',
+    'Perlu konfirmasi': 'Needs confirmation',
+    'Perlu data': 'Needs data',
+    'Diperbaiki': 'Corrected',
+    'Harga jual perusahaan': 'Company selling prices',
+    'Tidak ada data perusahaan yang tertanam di situs. Harga diinput manual (atau impor CSV) dan tersimpan hanya di browser masing-masing pengguna.': 'No company data is embedded in this site. Prices are entered manually (or imported from CSV) and stored only in each user’s browser.',
+    'Hanya dari sumber yang sudah dipublikasikan terbuka: sampel laporan Argus/Coalindo, harga mingguan yang dipublikasikan, serta ringkasan laporan yang dikutip media/perusahaan (lihat kolom Sumber). Data ICI berlangganan tidak dimuat, sehingga sebagian bulan kosong.': 'Only from openly published sources: Argus/Coalindo sample reports, published weekly prices, and report summaries quoted by media or companies (see the Source column). Subscription ICI data is not included, so some months are empty.',
+    'HBA per periode penetapan': 'HBA by determination period',
+    'USD/ton. Kosong = nilai tidak ditemukan pada sumber publik yang dapat diverifikasi (HBA I–III Jan–Jul 2023 memakai spesifikasi lama).': 'USD/ton. Blank = value not found in a verifiable public source (HBA I–III Jan–Jul 2023 used the old specification).',
+    'Periode': 'Period',
+    'HBA 6.322': 'HBA 6,322',
+    'HBA I 5.300': 'HBA I 5,300',
+    'HBA II 4.100': 'HBA II 4,100',
+    'HBA III 3.400': 'HBA III 3,400',
+    'ICI (Argus/Coalindo)': 'ICI (Argus/Coalindo)',
+    'Hanya data yang sudah dipublikasikan terbuka (rata-rata bulanan atau harga mingguan, lihat kolom Jenis dan Sumber). Bulan yang tidak tercantum tidak tersedia secara publik.': 'Only openly published data (monthly averages or weekly prices; see the Type and Source columns). Months not listed are not publicly available.',
+    'Konteks pasar': 'Market context',
+    'Indikator pendukung yang dipakai untuk menyusun skenario.': 'Supporting indicators used to build the scenarios.',
+    'Indikator': 'Indicator',
+    'Satuan': 'Unit',
+    'Tanggal': 'Date',
+    'Data HBA per Periode I Oktober 2026 (Kepmen ESDM 384.K/MB.01/MEM.B/2026); konteks pasar per 12 Oktober 2026. Sumber tiap angka ada di tab': 'HBA data as of Period I October 2026 (Kepmen ESDM 384.K/MB.01/MEM.B/2026); market context as of 12 October 2026. The source of every figure is in the',
+    '. Simulasi adalah alat bantu perencanaan berbasis asumsi yang dinyatakan, bukan prediksi pasti atau saran investasi.': ' tab. Simulations are planning aids based on stated assumptions, not firm forecasts or investment advice.',
+    'Impor batubara China': 'China coal imports',
+    'Impor batubara India': 'India coal imports',
+    'Pasokan/ekspor Indonesia (RKAB, DSI)': 'Indonesian supply/exports (RKAB, DSI)',
+    'Harga LNG JKM': 'LNG JKM price',
+    'Tarif freight kapal curah': 'Dry-bulk freight rates',
+    'Cuaca/musim (La Niña, musim dingin)': 'Weather/season (La Niña, winter)',
+    'Permintaan': 'Demand',
+    'Pasokan': 'Supply',
+    'Energi alternatif': 'Alternative energy',
+    'Faktor pendukung': 'Supporting factors',
+    'Langsung': 'Direct',
+    'Tidak langsung': 'Indirect',
+    'Kondisional': 'Conditional',
+    'Asumsi analis': 'Analyst assumption',
+    'IEA: impor termal laut China ~325 Mt (2025) → ~310 Mt (2026); stok tinggi & pergeseran ke Mongolia': 'IEA: China seaborne thermal imports ~325 Mt (2025) → ~310 Mt (2026); high stocks & shift to Mongolia',
+    'IEA: impor termal laut India ~167 Mt (2025) → ~160 Mt (2026); stok tinggi & substitusi domestik': 'IEA: India seaborne thermal imports ~167 Mt (2025) → ~160 Mt (2026); high stocks & domestic substitution',
+    'RKAB 2026 disetujui ~720 Mt (2025: 817 Mt); ekspor 2026 diproyeksi ~495 Mt (2025: 517 Mt); transisi eksportir DSI': 'RKAB 2026 approved ~720 Mt (2025: 817 Mt); 2026 exports projected ~495 Mt (2025: 517 Mt); transition to state exporter DSI',
+    'Krisis Timur Tengah & LNG ketat mendorong gas-to-coal switching di Asia (Okt 2026)': 'Middle East crisis & tight LNG drive gas-to-coal switching in Asia (Oct 2026)',
+    'Freight naik menekan netback FOB; efek kecil': 'Higher freight squeezes FOB netbacks; small effect',
+    'Musim dingin Asia Utara menaikkan permintaan; hujan lebat ganggu produksi Kalimantan': 'North Asian winter lifts demand; heavy rain disrupts Kalimantan output',
+    'HBA terakhir (6.322 GAR)': 'Latest HBA (6,322 GAR)',
+    'Newcastle futures Okt 2026': 'Newcastle futures Oct 2026',
+    'Newcastle futures Jan 2027': 'Newcastle futures Jan 2027',
+    'Konsensus Newcastle 2027 (median)': 'Newcastle consensus 2027 (median)',
+    'Konsensus Newcastle jangka panjang (riil)': 'Newcastle consensus long term (real)',
+    'Perdagangan termal laut global 2026': 'Global seaborne thermal trade 2026',
+    'Ekspor termal Indonesia 2026 (proyeksi)': 'Indonesia thermal exports 2026 (projected)',
+    'Produksi rencana RKAB 2026': 'RKAB 2026 planned production',
+    'Produksi Indonesia s.d. Jul 2026': 'Indonesia production to Jul 2026',
+    'Impor termal laut China 2026 (proyeksi)': 'China seaborne thermal imports 2026 (projected)',
+    'Impor termal laut India 2026 (proyeksi)': 'India seaborne thermal imports 2026 (projected)',
+    'ICI 4 (4.200 GAR) mingguan': 'ICI 4 (4,200 GAR) weekly',
+    'Failed to load': 'Failed to load',
+    'ICI 4 (4.200 GAR) · data terbaru tersedia': 'ICI 4 (4,200 GAR) · latest available',
+    'Harga aktual perusahaan · terakhir': 'Company actual price · latest',
+    'Rata-rata selisih aktual vs ICI 2': 'Average actual spread vs ICI 2',
+    'Belum ada data acuan penjualan': 'No sales benchmark data yet',
+    'Belum ada data — isi di bawah': 'No data yet — enter below',
+    '— tidak dikirim ke server dan tidak terlihat pengguna lain. Kelas kalori ditentukan dari GAR (≥6.200 = GAR ~6.400, selain itu GAR ~5.800).': '— it is never sent to a server and other users cannot see it. Calorific class is set from GAR (≥6,200 = GAR ~6,400, otherwise GAR ~5,800).',
+    'GAR (kcal/kg)': 'GAR (kcal/kg)',
+    'Kelas': 'Class',
+    'Tempel banyak baris sekaligus (CSV)': 'Paste multiple rows (CSV)',
+    'Format per baris:': 'Format per row:',
+    'atau': 'or',
+    '. Contoh:': '. Example:',
+    'Impor baris': 'Import rows',
+    'Pilih file CSV…': 'Choose CSV file…',
+    'Hapus semua': 'Delete all',
+    'Harga aktual': 'Actual price',
+    'Benchmark': 'Benchmark',
+    'Catatan data': 'Data notes',
+    'Jenis': 'Type',
+    'Isi per bulan (FOB, USD/ton). Data tersimpan': 'Enter monthly (FOB, USD/ton). Data is stored',
+    'Masukkan HPB per bulan (USD/t) untuk spesifikasi produk Anda, atau simpan dari kalkulator. Data tersimpan di perangkat ini dan tampil di kurva tren sebagai "HPB (input)".': 'Enter monthly HPB (USD/t) for your product specification, or save it from the calculator. Data is stored on this device and shown on the trend chart as "HPB (input)".',
+  };
+  
+  // pola untuk teks dinamis (diterapkan pada teks asli berformat Indonesia; angka dikonversi sesudahnya)
+  const REGEX = [
+    [/^(\d+) baris diimpor(?:, (\d+) baris dilewati(?: \(format tidak dikenali\))?)?\.$/, (m, a, b) => `${a} row${a === '1' ? '' : 's'} imported${b ? `, ${b} row${b === '1' ? '' : 's'} skipped${m.includes('format') ? ' (unrecognised format)' : ''}` : ''}.`],
+    [/^(\d+) bulan penjualan: rata-rata (harga aktual|selling price) /, (m, n, w) => `${n} sales month${n === '1' ? '' : 's'}: average ${w === 'harga aktual' ? 'actual price' : 'selling price'} `],
+    [/^(\d+) bln penjualan \(/, (m, n) => `${n} sales month${n === '1' ? '' : 's'} (`],
+    [/^HPB (.+) disimpan untuk (.+) dan tampil di kurva tren\.$/, 'HPB $1 saved for $2 and shown on the trend chart.'],
+    [/Selling price GAR ~(\S+) rata-rata di (bawah|atas) ICI 2 sebesar /, (m, g, w) => `Selling price GAR ~${g} averaged ${w === 'bawah' ? 'below' : 'above'} ICI 2 by `],
+  ];
+  const PHRASES = [
+    ['(−', '(−'],
+    [' dari bulan sebelumnya)', ' vs previous month)'],
+    ['Skenario dasar HBA 12 bulan:', 'HBA 12-month base case:'],
+    ['(rentang 80% ', '(80% range '],
+    [' bulan penjualan ', ' sales months '],
+    [', vs ICI 2 bulan yang sama', ', vs ICI 2 in the same month'],
+    ['; tertimbang volume ', '; volume-weighted '],
+    [', selisih ', ', spread '],
+    ['(rasio ', '(ratio '],
+    ['vs bln sebelumnya', 'vs previous month'],
+    ['vs penjualan terakhir', 'vs latest sale'],
+    ['vs terakhir', 'vs latest'],
+    ['· bulan ke-', '· month '],
+    ['Dampak faktor kustom saat efek penuh:', 'Custom driver impact at full effect:'],
+    ['terhadap jalur statistik + kurva forward.', 'on the statistical path + forward curve.'],
+    [': riwayat 24 bulan, proyeksi ', ': 24-month history, '],
+    [' bulan dari data terakhir ', '-month projection from latest data '],
+    [', pita 80% di sekitar Base.', ', 80% band around Base.'],
+    [': titik = bulan penjualan; proyeksi ', ': dots = sales months; '],
+    [' bulan mengikuti ', '-month projection follows '],
+    [' × rasio ', ' × ratio '],
+    [', USD/ton. Bulan ke-3/6/12 dihitung dari ', ', USD/ton. Months 3/6/12 counted from '],
+    ['. Rentang = pita 80% bulan ke-12.', '. Range = 80% band at month 12.'],
+    ['Harga aktual = jalur ', 'Actual price = path of '],
+    ['(rata-rata aktual/benchmark ', '(average actual/benchmark over the last '],
+    [' bulan penjualan terakhir yang tumpang-tindih).', ' overlapping sales months).'],
+    [': error out-of-sample (USD/t) sejak ', ': out-of-sample error (USD/t) since '],
+    ['; RMSE terbaik per horizon ditebalkan. Sampel uji kecil (n ', '; best RMSE per horizon in bold. Small test sample (n '],
+    ['), jadi bedanya tipis. Volatilitas bulanan ', '), so differences are slim. Monthly volatility '],
+    ['· dengan koreksi kualitas', '· with quality corrections'],
+    ['· tanpa koreksi kualitas', '· without quality corrections'],
+    ['Interpolasi kalori, bobot ', 'Calorific interpolation, weight '],
+    ['Koreksi TM:', 'TM correction:'], ['Koreksi TS:', 'TS correction:'], ['Koreksi Ash:', 'Ash correction:'],
+    ['Spesifikasi acuan pada ', 'Reference specification at '],
+    [' (formula lama)', ' (old formula)'],
+    ['(* ICI mingguan/parsial)', '(* ICI weekly/partial)'],
+    [' (riwayat)', ' (history)'], [' (seri historis)', ' (historical series)'], [' acuan perusahaan', ' company reference'],
+    ['(pengaturan Anda)', '(your settings)'],
+    ['Riwayat ', 'History '], ['Acuan×rasio ', 'Benchmark×ratio '], ['Kustom ', 'Custom '],
+    ['Aktual GAR ', 'Actual GAR '], ['Aktual ~', 'Actual ~'], ['Harga aktual ', 'Actual price '],
+    ['HBA I/II spesifikasi lama', 'HBA I/II old specification'], ['HBA I spesifikasi lama', 'HBA I old specification'], ['formula baru', 'new formula'],
+    ['harga mingguan awal ', 'weekly price, early '], ['(s.d. ', '(to '],
+    [' via Bisnis.com/IMA, ', ' via Bisnis.com/IMA, '],
+    ['Ringkasan laporan Argus/Coalindo yang dipublikasikan Aryacitra', 'Argus/Coalindo report summary published by Aryacitra'],
+    [' dipublikasikan', ' published'],
+    ['Maret ', 'March '], ['Oktober ', 'October '], ['Agustus ', 'August '], ['Desember ', 'December '], ['Juni ', 'June '], ['Juli ', 'July '],
+  ].sort((a, b) => b[0].length - a[0].length);
+  
+  const MONTHS = [[/\bMei\b/g, 'May'], [/\bAgu\b/g, 'Aug'], [/\bOkt\b/g, 'Oct'], [/\bDes\b/g, 'Dec']];
+  const NUM = /(?<![\w.,$])(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d+))?(?![\w])/g;
+  const NUM2 = /(?<=US\$)(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d+))?(?![\w])/g;
+  const convNum = (s) => s.replace(NUM, (m, a, b) => a.replace(/\./g, ',') + (b != null ? '.' + b : '')).replace(NUM2, (m, a, b) => a.replace(/\./g, ',') + (b != null ? '.' + b : ''));
+  const CODE_TR = {
+    'mm/yy,harga[,volume,gar]': 'mm/yy,price[,volume,gar]', 'YYYY-MM,harga,…': 'YYYY-MM,price,…', 'mm/yy,hpb[,gar]': 'mm/yy,hpb[,gar]',
+    'bulan,harga[,volume,gar,kelas,selling_price,ici_acuan,hpb_acuan]': 'month,price[,volume,gar,class,selling_price,ici_ref,hpb_ref]',
+  };
+  const norm = (s) => s.replace(/\s+/g, ' ').trim();
+  const tr = (s) => {
+    const k = norm(s);
+    if (!k) return s;
+    if (Object.prototype.hasOwnProperty.call(EXACT, k)) return s.match(/^\s*/)[0] + EXACT[k] + s.match(/\s*$/)[0];
+    let out = k;
+    REGEX.forEach(([re, rep]) => { out = out.replace(re, rep); });
+    PHRASES.forEach(([a, b]) => { if (out.includes(a)) out = out.split(a).join(b); });
+    MONTHS.forEach(([re, b]) => { out = out.replace(re, b); });
+    out = convNum(out);
+    const lead = s.match(/^\s*/)[0], trail = s.match(/\s*$/)[0];
+    return lead + out + trail;
+  };
+  const trAttr = (s) => { const k = norm(s); return Object.prototype.hasOwnProperty.call(EXACT, '@' + k) ? EXACT['@' + k] : (EXACT[k] || s); };
+
+  const KEY = 'coal_dashboard_lang';
+  const store = window.__store;
+  let lang = 'id';
+  try {
+    const q = new URLSearchParams(location.search).get('lang');
+    const saved = store ? store.load(KEY) : null;
+    lang = (q === 'en' || q === 'id') ? q : (saved === 'en' || saved === 'id') ? saved : 'id';
+  } catch (e) { /* default id */ }
+
+  const orig = new WeakMap(), shown = new WeakMap(), origAttr = new WeakMap();
+  const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA']);
+  const doText = (n, force) => {
+    const p = n.parentNode; if (!p || SKIP.has(p.nodeName)) return;
+    let cur = n.nodeValue;
+    if (shown.get(n) === cur) { if (!force) return; cur = orig.has(n) ? orig.get(n) : cur; }
+    orig.set(n, cur);
+    const next = lang !== 'en' ? cur : (p.nodeName === 'CODE' ? (CODE_TR[norm(cur)] || cur) : tr(cur));
+    if (next !== cur) n.nodeValue = next;
+    shown.set(n, next);
+  };
+  const ATTRS = ['placeholder', 'aria-label', 'title'];
+  const doAttrs = (el) => {
+    if (!el.getAttribute) return;
+    ATTRS.forEach((a) => {
+      const v = el.getAttribute(a); if (v == null) return;
+      let o = origAttr.get(el); if (!o) { o = {}; origAttr.set(el, o); }
+      if (o['_' + a] !== v) o[a] = v;
+      const next = lang === 'en' ? trAttr(o[a]) : o[a];
+      o['_' + a] = next;
+      if (next !== v) el.setAttribute(a, next);
+    });
+  };
+  const walk = (root, force) => {
+    if (root.nodeType === 3) { doText(root, force); return; }
+    if (root.nodeType !== 1 || SKIP.has(root.nodeName)) return;
+    doAttrs(root);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    let n; while ((n = w.nextNode())) { if (n.nodeType === 3) doText(n, force); else doAttrs(n); }
+  };
+  const roots = () => [document.querySelector('.cx'), document.querySelector('.cx-foot')].filter(Boolean);
+  const applyAll = () => {
+    roots().forEach((r) => {
+      if (lang === 'id') {
+        const w = document.createTreeWalker(r, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+        let n; while ((n = w.nextNode())) {
+          if (n.nodeType === 3) { const o = orig.get(n); if (o != null && n.nodeValue !== o) n.nodeValue = o; shown.set(n, n.nodeValue); }
+          else { const o = origAttr.get(n); if (o) ATTRS.forEach((a) => { if (o[a] != null) { n.setAttribute(a, o[a]); o['_' + a] = o[a]; } }); }
+        }
+      } else walk(r, true);
+    });
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.cx-lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    if (document.title) document.title = lang === 'en' ? 'Coal Price Dashboard' : 'Dashboard Harga Batubara';
+  };
+  const obs = new MutationObserver((muts) => {
+    if (lang !== 'en') return;
+    muts.forEach((m) => {
+      if (m.type === 'characterData') doText(m.target);
+      else if (m.type === 'attributes') doAttrs(m.target);
+      else m.addedNodes.forEach(walk);
+    });
+  });
+  const start = () => {
+    roots().forEach((r) => obs.observe(r, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS }));
+    document.querySelectorAll('.cx-lang button').forEach((b) => b.addEventListener('click', () => {
+      lang = b.dataset.lang;
+      try { if (store) store.save(KEY, lang); } catch (e) { /* abaikan */ }
+      applyAll();
+    }));
+    applyAll();
+  };
+  const _confirm = window.confirm.bind(window);
+  const CONF = { 'Hapus semua harga aktual yang tersimpan di browser ini?': 'Delete all actual prices stored in this browser?', 'Hapus semua HPB yang tersimpan di browser ini?': 'Delete all HPB values stored in this browser?' };
+  window.confirm = (m) => _confirm(lang === 'en' && CONF[m] ? CONF[m] : m);
+  window.__i18n = { get lang() { return lang; }, tr };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
 </script>
 
