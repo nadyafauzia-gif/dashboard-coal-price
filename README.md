@@ -11,6 +11,10 @@ Semuanya ada dalam satu file `index.html`, tanpa server dan tanpa database.
 - **Kalkulator HPB**: hitung Harga Patokan Batubara dari GAR, TM, TS dan Ash berdasarkan HBA periode terpilih (interpolasi kalori antar-kategori HBA, koreksi kualitas opsional), lalu simpan hasilnya ke kurva. HPB perusahaan juga bisa diinput manual per bulan.
 - **Data & sumber**: tabel HBA per periode Kepmen, ICI dari sumber yang sudah dipublikasikan terbuka, dan indikator konteks pasar beserta sumbernya.
 
+## Bahasa / Language
+
+Dashboard tersedia dalam bahasa Indonesia (default) dan Inggris. Gunakan tombol **ID | EN** di pojok kanan atas; pilihan tersimpan di browser. Untuk membagikan tautan langsung berbahasa Inggris, tambahkan `?lang=en` di akhir alamat, misalnya `https://namaakun.github.io/dashboard-batubara/?lang=en`.
+
 ## Privasi data perusahaan
 
 Harga jual aktual dan HPB yang dimasukkan **hanya disimpan di browser perangkat masing-masing** (localStorage). Data itu tidak dikirim ke server, tidak masuk ke repository ini, dan tidak terlihat oleh pengguna lain.
