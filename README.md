@@ -46,4 +46,4 @@ Setiap ESDM merilis HBA baru (periode I sekitar tanggal 1, periode II sekitar ta
 - Hasil simulasi adalah alat bantu perencanaan, bukan prediksi pasti atau saran investasi.
 - Data ICI tidak lengkap karena ICI adalah data berlangganan Argus/Coalindo.
 
-Cut-off data: HBA Periode I Oktober 2026 (Kepmen ESDM 384.K/MB.01/MEM.B/2026).
+Cut-off data: HBA Periode I November 2026 (Kepmen ESDM 509.K/MB.01/MEM.B/2026).
